@@ -1,0 +1,225 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: HoatzinMedia — Library Cleaner & Storage Optimizer\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-14 17:15+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.3; wp-6.9.4; php-8.2.29\n"
+"X-Domain: hoatzinmedia-library-cleaner"
+
+#: includes/Service/class-scanner.php:32
+msgid "A scan is already running."
+msgstr ""
+
+#: includes/Rest/class-regenerate-controller.php:319
+#: includes/Rest/class-regenerate-controller.php:492
+msgid "Already regenerated, skipped."
+msgstr ""
+
+#: includes/Service/class-scanner.php:85
+msgid "Another scan is already running."
+msgstr ""
+
+#: includes/Rest/class-unused-results-controller.php:212
+msgid "attachment_ids must be an array."
+msgstr ""
+
+#: includes/Rest/class-image-formats-controller.php:345
+#: includes/Rest/class-image-formats-controller.php:469
+msgid "Converted successfully."
+msgstr ""
+
+#: includes/Service/class-media-health.php:63
+msgid "Critical"
+msgstr ""
+
+#: includes/Admin/class-admin.php:245
+msgid "Custom image sizes"
+msgstr ""
+
+#: includes/Admin/class-admin.php:257
+msgid "Custom sizes registered:"
+msgstr ""
+
+#: includes/Admin/class-admin.php:99 includes/Admin/class-admin.php:100
+msgid "Duplicate Checker"
+msgstr ""
+
+#: includes/Service/class-media-health.php:52
+msgid "Excellent"
+msgstr ""
+
+#: includes/Admin/class-admin.php:110 includes/Admin/class-admin.php:111
+msgid "Convert (WebP / AVIF)"
+msgstr ""
+
+#: includes/Service/class-converter.php:91
+msgid "Failed to generate attachment metadata."
+msgstr ""
+
+#: includes/Rest/class-regenerate-controller.php:330
+#: includes/Rest/class-regenerate-controller.php:504
+msgid "Failed to generate metadata."
+msgstr ""
+
+#: includes/Rest/class-regenerate-controller.php:309
+#: includes/Rest/class-regenerate-controller.php:480
+#: includes/Service/class-converter.php:32
+msgid "File not found."
+msgstr ""
+
+#: includes/Service/class-media-health.php:56
+msgid "Good"
+msgstr ""
+
+#: includes/Admin/class-admin.php:280
+msgid "hard"
+msgstr ""
+
+#: includes/Admin/class-admin.php:65 includes/Admin/class-admin.php:66
+msgid "HoatzinMedia"
+msgstr ""
+
+#. Name of the plugin
+msgid "HoatzinMedia — Library Cleaner & Storage Optimizer"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://profiles.wordpress.org/wpfeaturekits22/"
+msgstr ""
+
+#: includes/Rest/class-duplicates-controller.php:63
+#: includes/Rest/class-image-formats-controller.php:142
+#: includes/Rest/class-large-files-controller.php:63
+#: includes/Rest/class-modules-controller.php:75
+#: includes/Rest/class-regenerate-controller.php:149
+#: includes/Rest/class-scan-controller.php:54
+#: includes/Rest/class-settings-controller.php:78
+#: includes/Rest/class-unused-results-controller.php:73
+msgid "Invalid security token."
+msgstr ""
+
+#: includes/Rest/class-image-formats-controller.php:485
+#: includes/Rest/class-image-formats-controller.php:513
+#: includes/Rest/class-regenerate-controller.php:531
+#: includes/Rest/class-regenerate-controller.php:560
+msgid "Job not found."
+msgstr ""
+
+#: includes/Admin/class-admin.php:88 includes/Admin/class-admin.php:89
+msgid "Large Files"
+msgstr ""
+
+#: includes/Admin/class-admin.php:142 includes/Admin/class-admin.php:143
+msgid "Modules"
+msgstr ""
+
+#: includes/Rest/class-modules-controller.php:105
+msgid "Modules payload must be an array."
+msgstr ""
+
+#: includes/Service/class-media-health.php:60
+msgid "Needs optimization"
+msgstr ""
+
+#: includes/Admin/class-admin.php:268
+msgid "No custom sizes found."
+msgstr ""
+
+#: includes/Rest/class-image-formats-controller.php:299
+#: includes/Rest/class-image-formats-controller.php:403
+msgid "No images selected for conversion."
+msgstr ""
+
+#: includes/Rest/class-regenerate-controller.php:293
+#: includes/Rest/class-regenerate-controller.php:421
+msgid "No media selected."
+msgstr ""
+
+#: includes/Rest/class-unused-results-controller.php:229
+msgid "No valid attachment IDs provided."
+msgstr ""
+
+#: includes/Service/class-scheduler.php:88
+msgid "Once Monthly"
+msgstr ""
+
+#: includes/Service/class-scheduler.php:81
+msgid "Once Weekly"
+msgstr ""
+
+#: includes/Admin/class-admin.php:255
+msgid "Open HoatzinMedia"
+msgstr ""
+
+#: includes/Admin/class-admin.php:254
+msgid "Provided by HoatzinMedia"
+msgstr ""
+
+#: includes/Admin/class-admin.php:121 includes/Admin/class-admin.php:122
+msgid "Regenerate Thumbnails"
+msgstr ""
+
+#: includes/Admin/class-admin.php:264
+msgid "Registered sizes"
+msgstr ""
+
+#: includes/Service/class-scanner.php:97
+msgid "Scan could not be found or has expired."
+msgstr ""
+
+#: includes/Service/class-converter.php:43
+msgid "Selected format is not supported by the current image editor."
+msgstr ""
+
+#: includes/Admin/class-admin.php:133 includes/Admin/class-admin.php:134
+msgid "Settings"
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Smart media library cleaner and storage optimizer with scan history and "
+"trash management."
+msgstr ""
+
+#: includes/Admin/class-admin.php:77 includes/Admin/class-admin.php:78
+msgid "Smart Scan & Unused Media"
+msgstr ""
+
+#: includes/Admin/class-admin.php:280
+msgid "soft"
+msgstr ""
+
+#: includes/Rest/class-regenerate-controller.php:340
+#: includes/Rest/class-regenerate-controller.php:515
+msgid "Thumbnails regenerated."
+msgstr ""
+
+#: includes/Rest/class-image-formats-controller.php:309
+#: includes/Rest/class-image-formats-controller.php:387
+msgid "Unsupported target format."
+msgstr ""
+
+#. Author of the plugin
+msgid "wpfeaturekits22"
+msgstr ""
+
+#: includes/Rest/class-duplicates-controller.php:51
+#: includes/Rest/class-image-formats-controller.php:130
+#: includes/Rest/class-large-files-controller.php:51
+#: includes/Rest/class-modules-controller.php:63
+#: includes/Rest/class-regenerate-controller.php:137
+#: includes/Rest/class-scan-controller.php:42
+#: includes/Rest/class-settings-controller.php:66
+#: includes/Rest/class-unused-results-controller.php:61
+msgid "You are not allowed to perform this action."
+msgstr ""

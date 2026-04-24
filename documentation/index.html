@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>HoatzinMedia Documentation</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+				--bg: #0b1220;
+				--panel: rgba(255, 255, 255, 0.06);
+				--panel-2: rgba(255, 255, 255, 0.09);
+				--text: rgba(255, 255, 255, 0.92);
+				--muted: rgba(255, 255, 255, 0.70);
+				--faint: rgba(255, 255, 255, 0.55);
+				--border: rgba(255, 255, 255, 0.12);
+				--accent: #69a8ff;
+				--accent-2: #7cf7d4;
+				--danger: #ff6b6b;
+				--code-bg: rgba(0, 0, 0, 0.35);
+				--shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+				--radius: 16px;
+				--radius-sm: 12px;
+				--max: 1180px;
+				--nav-w: 300px;
+				--header-h: 64px;
+				--font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+					"Segoe UI Emoji";
+				--mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+			}
+
+			@media (prefers-color-scheme: light) {
+				:root {
+					--bg: #f6f7fb;
+					--panel: rgba(0, 0, 0, 0.04);
+					--panel-2: rgba(0, 0, 0, 0.06);
+					--text: rgba(9, 14, 24, 0.92);
+					--muted: rgba(9, 14, 24, 0.70);
+					--faint: rgba(9, 14, 24, 0.55);
+					--border: rgba(9, 14, 24, 0.12);
+					--accent: #1d62ff;
+					--accent-2: #0bb27a;
+					--danger: #b3261e;
+					--code-bg: rgba(9, 14, 24, 0.06);
+					--shadow: 0 18px 55px rgba(9, 14, 24, 0.10);
+				}
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html {
+				scroll-behavior: smooth;
+			}
+
+			body {
+				margin: 0;
+				font-family: var(--font);
+				font-size: 17px;
+				color: var(--text);
+				background: radial-gradient(1200px 600px at 20% -10%, rgba(105, 168, 255, 0.35), transparent 60%),
+					radial-gradient(900px 500px at 90% 0%, rgba(124, 247, 212, 0.22), transparent 55%),
+					radial-gradient(1000px 700px at 50% 120%, rgba(105, 168, 255, 0.18), transparent 55%),
+					var(--bg);
+				line-height: 1.55;
+				text-align: left;
+				padding-top: var(--header-h);
+			}
+
+			.topbar {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: var(--header-h);
+				z-index: 1000;
+				background: rgba(0, 0, 0, 0.35);
+				border-bottom: 1px solid var(--border);
+				backdrop-filter: blur(12px);
+				-webkit-backdrop-filter: blur(12px);
+			}
+
+			@media (prefers-color-scheme: light) {
+				.topbar {
+					background: rgba(255, 255, 255, 0.72);
+				}
+			}
+
+			.topbar-inner {
+				height: 100%;
+				display: grid;
+				grid-template-columns: minmax(240px, var(--nav-w)) minmax(0, 1fr);
+				gap: 18px;
+				align-items: center;
+				max-width: 100%;
+				margin: 0;
+				padding: 0 20px 0 0;
+			}
+
+			@media (max-width: 980px) {
+				.topbar-inner {
+					grid-template-columns: 1fr;
+					padding: 0 20px;
+				}
+			}
+
+			.topbar-brand {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				min-width: 0;
+				padding-left: 16px;
+			}
+
+			@media (max-width: 980px) {
+				.topbar-brand {
+					padding-left: 0;
+				}
+			}
+
+			.topbar-logo {
+				width: 32px;
+				height: 32px;
+				border-radius: 10px;
+				border: 1px solid var(--border);
+				overflow: hidden;
+				background: rgba(255, 255, 255, 0.10);
+				flex: 0 0 auto;
+			}
+
+			.topbar-logo img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+			}
+
+			.topbar-title {
+				font-size: 14px;
+				letter-spacing: 0.2px;
+				color: var(--text);
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.topbar-actions {
+				display: flex;
+				justify-content: flex-end;
+				align-items: center;
+				gap: 10px;
+				padding-right: 20px;
+				min-width: 0;
+				color: var(--muted);
+				font-size: 13px;
+			}
+
+			@media (max-width: 980px) {
+				.topbar-actions {
+					display: none;
+				}
+			}
+
+			a {
+				color: var(--accent);
+				text-decoration: none;
+			}
+
+			a:hover {
+				text-decoration: underline;
+			}
+
+			.container {
+				max-width: 100%;
+				margin: 0;
+				padding: 28px 20px 60px 0;
+			}
+
+			.layout {
+				display: grid;
+				grid-template-columns: minmax(240px, var(--nav-w)) minmax(0, 1fr);
+				gap: 18px;
+				align-items: start;
+				min-width: 0;
+			}
+
+			@media (max-width: 980px) {
+				.container {
+					padding: 28px 20px 60px;
+				}
+
+				.layout {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.hero {
+				margin: 10px 20px 20px;
+				background: linear-gradient(135deg, rgba(105, 168, 255, 0.25), rgba(124, 247, 212, 0.14));
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+				box-shadow: var(--shadow);
+				padding: 22px;
+			}
+
+			.hero-top {
+				display: flex;
+				align-items: center;
+				gap: 14px;
+				flex-wrap: wrap;
+				justify-content: space-between;
+			}
+
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				min-width: 260px;
+			}
+
+			.logo {
+				width: 44px;
+				height: 44px;
+				border-radius: 12px;
+				background: rgba(255, 255, 255, 0.12);
+				border: 1px solid var(--border);
+				display: grid;
+				place-items: center;
+				overflow: hidden;
+			}
+
+			.logo img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+			}
+
+			.hero h1 {
+				font-size: 24px;
+				margin: 0;
+				letter-spacing: 0.2px;
+			}
+
+			.hero p {
+				margin: 10px 0 0;
+				color: var(--muted);
+				max-width: 86ch;
+			}
+
+			.badges {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+				align-items: center;
+				justify-content: flex-end;
+			}
+
+			.badge {
+				padding: 6px 10px;
+				border-radius: 999px;
+				background: rgba(0, 0, 0, 0.18);
+				border: 1px solid var(--border);
+				color: var(--muted);
+				font-size: 13px;
+				white-space: nowrap;
+			}
+
+			@media (prefers-color-scheme: light) {
+				.badge {
+					background: rgba(255, 255, 255, 0.65);
+				}
+			}
+
+			nav {
+				position: sticky;
+				top: calc(var(--header-h) + 16px);
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: 0 var(--radius) var(--radius) 0;
+				padding: 16px;
+				box-shadow: var(--shadow);
+				min-width: 0;
+			}
+
+			@media (max-width: 980px) {
+				nav {
+					position: relative;
+					top: 0;
+					border-radius: var(--radius);
+				}
+			}
+
+			.nav-title {
+				font-size: 13px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--faint);
+				margin: 0 0 10px;
+			}
+
+			.nav-panel-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 10px;
+				padding: 10px 12px 14px;
+				margin: -6px -6px 12px;
+				border-bottom: 1px solid var(--border);
+			}
+
+			.nav-panel-header strong {
+				font-size: 13px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--faint);
+			}
+
+			.nav-panel-header a {
+				font-size: 13px;
+				color: var(--muted);
+			}
+
+			.nav-list {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				display: grid;
+				gap: 8px;
+			}
+
+			.nav-list a {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 10px;
+				padding: 10px 12px;
+				border-radius: 12px;
+				background: transparent;
+				border: 1px solid transparent;
+				color: var(--text);
+				text-decoration: none;
+				font-size: 15px;
+			}
+
+			.nav-list a:hover {
+				background: var(--panel-2);
+				border-color: var(--border);
+				text-decoration: none;
+			}
+
+			.nav-list a.is-active {
+				background: var(--panel-2);
+				border-color: rgba(105, 168, 255, 0.35);
+				box-shadow: inset 3px 0 0 var(--accent);
+			}
+
+			.nav-list a.is-active span {
+				color: var(--accent);
+			}
+
+			main {
+				display: grid;
+				gap: 16px;
+				min-width: 0;
+				padding-left: 20px;
+			}
+
+			@media (max-width: 980px) {
+				main {
+					padding-left: 0;
+				}
+			}
+
+			.card {
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+				padding: 18px;
+				box-shadow: var(--shadow);
+				min-width: 0;
+				scroll-margin-top: calc(var(--header-h) + 18px);
+			}
+
+			.card h2 {
+				margin: 0 0 10px;
+				font-size: 20px;
+				letter-spacing: 0.2px;
+			}
+
+			.card h3 {
+				margin: 18px 0 8px;
+				font-size: 16px;
+			}
+
+			.card p {
+				margin: 8px 0;
+				color: var(--muted);
+			}
+
+			.card ul,
+			.card ol {
+				margin: 8px 0 0;
+				color: var(--muted);
+				padding-left: 18px;
+			}
+
+			.card li {
+				margin: 6px 0;
+			}
+
+			.kv {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+				margin-top: 12px;
+			}
+
+			@media (max-width: 680px) {
+				.kv {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.kv-item {
+				border: 1px solid var(--border);
+				background: rgba(0, 0, 0, 0.18);
+				border-radius: var(--radius-sm);
+				padding: 12px;
+			}
+
+			@media (prefers-color-scheme: light) {
+				.kv-item {
+					background: rgba(255, 255, 255, 0.7);
+				}
+			}
+
+			.kv-item strong {
+				display: block;
+				color: var(--text);
+				font-size: 13px;
+				margin-bottom: 4px;
+			}
+
+			.kv-item span {
+				color: var(--muted);
+				font-size: 13px;
+			}
+
+			code,
+			pre {
+				font-family: var(--mono);
+			}
+
+			pre {
+				margin: 12px 0 0;
+				padding: 12px;
+				border-radius: var(--radius-sm);
+				background: var(--code-bg);
+				border: 1px solid var(--border);
+				overflow: auto;
+				max-width: 100%;
+				color: var(--text);
+				font-size: 13px;
+			}
+
+			.inline-code {
+				font-family: var(--mono);
+				font-size: 0.95em;
+				padding: 2px 6px;
+				border-radius: 8px;
+				background: var(--code-bg);
+				border: 1px solid var(--border);
+				color: var(--text);
+			}
+
+			.callout {
+				margin-top: 12px;
+				padding: 12px;
+				border-radius: var(--radius-sm);
+				border: 1px solid var(--border);
+				background: rgba(0, 0, 0, 0.18);
+				color: var(--muted);
+			}
+
+			@media (prefers-color-scheme: light) {
+				.callout {
+					background: rgba(255, 255, 255, 0.7);
+				}
+			}
+
+			.callout strong {
+				color: var(--text);
+			}
+
+			.callout.danger {
+				border-color: rgba(255, 107, 107, 0.38);
+				background: rgba(255, 107, 107, 0.12);
+			}
+
+			.callout.success {
+				border-color: rgba(124, 247, 212, 0.35);
+				background: rgba(124, 247, 212, 0.10);
+			}
+
+			.grid-2 {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 12px;
+				margin-top: 12px;
+			}
+
+			@media (max-width: 900px) {
+				.grid-2 {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.placeholder-shot {
+				width: 100%;
+				aspect-ratio: 16 / 9;
+				border-radius: var(--radius-sm);
+				border: 1px dashed rgba(105, 168, 255, 0.55);
+				background: linear-gradient(135deg, rgba(105, 168, 255, 0.16), rgba(124, 247, 212, 0.10));
+				display: flex;
+				align-items: flex-start;
+				justify-content: flex-start;
+				color: var(--muted);
+				text-align: left;
+				padding: 18px;
+			}
+
+			.placeholder-shot strong {
+				display: block;
+				color: var(--text);
+				margin-bottom: 6px;
+			}
+
+			.feature-grid {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 12px;
+				margin-top: 12px;
+			}
+
+			@media (max-width: 900px) {
+				.feature-grid {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.feature {
+				border: 1px solid var(--border);
+				background: rgba(0, 0, 0, 0.18);
+				border-radius: var(--radius-sm);
+				padding: 12px;
+			}
+
+			@media (prefers-color-scheme: light) {
+				.feature {
+					background: rgba(255, 255, 255, 0.7);
+				}
+			}
+
+			.feature h4 {
+				margin: 0 0 6px;
+				font-size: 14px;
+				color: var(--text);
+			}
+
+			.feature p {
+				margin: 0;
+				font-size: 13px;
+				color: var(--muted);
+			}
+
+			.footer {
+				margin-top: 16px;
+				font-size: 13px;
+				color: var(--faint);
+			}
+		</style>
+	</head>
+	<body>
+		<header class="topbar" role="banner">
+			<div class="topbar-inner">
+				<div class="topbar-brand">
+					<a href="#top" class="topbar-logo" aria-label="Back to top">
+						<img src="../assets/img/logo.png" alt="" />
+					</a>
+					<div class="topbar-title">HoatzinMedia Documentation</div>
+				</div>
+				<div class="topbar-actions">
+					<span>Use the menu to jump to sections</span>
+				</div>
+			</div>
+		</header>
+		<div class="container">
+			<section class="hero" id="top">
+				<div class="hero-top">
+					<div class="brand">
+						<div class="logo" aria-hidden="true">
+							<img src="../assets/img/logo.png" alt="" />
+						</div>
+						<div>
+							<h1>HoatzinMedia — Library Cleaner &amp; Storage Optimizer</h1>
+							<div class="badges" style="justify-content: flex-start">
+								<span class="badge">WordPress admin plugin</span>
+								<span class="badge">Smart scan • Duplicates • WebP/AVIF • Thumbnails</span>
+								<span class="badge">Text domain: hoatzinmedia-library-cleaner</span>
+							</div>
+						</div>
+					</div>
+					<div class="badges">
+						<span class="badge">For site owners</span>
+						<span class="badge">For developers</span>
+					</div>
+				</div>
+				<p>
+					This document explains every HoatzinMedia feature, what it does, and how to use it safely on real sites.
+					It’s designed for marketplace distribution and can be printed as a single-page guide.
+				</p>
+			</section>
+
+			<div class="layout">
+				<nav aria-label="Documentation navigation">
+					<div class="nav-panel-header">
+						<strong>Contents</strong>
+						<a href="#top">Top</a>
+					</div>
+					<ul class="nav-list">
+						<li><a href="#quick-start">Quick start <span>→</span></a></li>
+						<li><a href="#installation">Installation <span>→</span></a></li>
+						<li><a href="#overview">Overview <span>→</span></a></li>
+						<li><a href="#modules">Modules <span>→</span></a></li>
+						<li><a href="#smart-scan">Smart scan &amp; unused media <span>→</span></a></li>
+						<li><a href="#large-files">Large files <span>→</span></a></li>
+						<li><a href="#duplicates">Duplicate checker <span>→</span></a></li>
+						<li><a href="#converter">Convert to WebP / AVIF <span>→</span></a></li>
+						<li><a href="#regenerate">Regenerate thumbnails <span>→</span></a></li>
+						<li><a href="#media-library-ui">Media library enhancements <span>→</span></a></li>
+						<li><a href="#settings">Settings <span>→</span></a></li>
+						<li><a href="#troubleshooting">Troubleshooting <span>→</span></a></li>
+						<li><a href="#developer">Developer notes <span>→</span></a></li>
+					</ul>
+				</nav>
+
+				<main>
+					<section class="card" id="quick-start">
+						<h2>Quick start</h2>
+						<ol>
+							<li>
+								Install and activate the plugin.
+							</li>
+							<li>
+								Open <span class="inline-code">WP Admin → HoatzinMedia</span>.
+							</li>
+							<li>
+								Run a smart scan and review the unused results list.
+							</li>
+							<li>
+								Before deleting anything: verify usage (usage button) and take a backup.
+							</li>
+							<li>
+								Optional: convert images to WebP/AVIF and regenerate thumbnails.
+							</li>
+						</ol>
+						<div class="callout success">
+							<strong>Recommended workflow:</strong> Start with Smart Scan → check Usage → remove truly unused items → then optimize formats and thumbnails.
+						</div>
+					</section>
+
+					<section class="card" id="installation">
+						<h2>Installation</h2>
+						<h3>Requirements</h3>
+						<div class="kv">
+							<div class="kv-item">
+								<strong>WordPress</strong>
+								<span>5.8+ (tested up to 6.9)</span>
+							</div>
+							<div class="kv-item">
+								<strong>PHP</strong>
+								<span>7.4+ (higher recommended)</span>
+							</div>
+							<div class="kv-item">
+								<strong>Permissions</strong>
+								<span>Admin actions require <span class="inline-code">manage_options</span></span>
+							</div>
+							<div class="kv-item">
+								<strong>Image conversion</strong>
+								<span>Works best with GD or Imagick enabled</span>
+							</div>
+						</div>
+
+						<h3>Install</h3>
+						<ol>
+							<li>Upload the <span class="inline-code">hoatzinmedia-library-cleaner</span> folder to <span class="inline-code">/wp-content/plugins/</span>.</li>
+							<li>Activate HoatzinMedia from <span class="inline-code">Plugins</span>.</li>
+							<li>Open <span class="inline-code">WP Admin → HoatzinMedia</span>.</li>
+						</ol>
+					</section>
+
+					<section class="card" id="overview">
+						<h2>Overview</h2>
+						<p>
+							HoatzinMedia helps you understand and reduce media bloat: it can find unused attachments, highlight large files,
+							show where a media item is used, regenerate thumbnails, and convert images to modern formats.
+						</p>
+
+						<div class="feature-grid">
+							<div class="feature">
+								<h4>Smart scan for unused media</h4>
+								<p>Batch scan of attachments with a results list and bulk actions.</p>
+							</div>
+							<div class="feature">
+								<h4>Usage detector</h4>
+								<p>Shows where an attachment is used (featured image, content, common builder metadata, site icon/logo, WooCommerce).</p>
+							</div>
+							<div class="feature">
+								<h4>Large file explorer</h4>
+								<p>Lists attachments over a selected size threshold (1/3/5 MB) so you can prioritize heavy assets.</p>
+							</div>
+							<div class="feature">
+								<h4>WebP / AVIF conversion</h4>
+								<p>Convert selected images, with background jobs for large batches and configurable destination/structure.</p>
+							</div>
+							<div class="feature">
+								<h4>Regenerate thumbnails</h4>
+								<p>Recreate intermediate sizes for selected images or the whole library.</p>
+							</div>
+							<div class="feature">
+								<h4>Media library UI enhancements</h4>
+								<p>Optional file-extension labels and a stats strip in the grid view.</p>
+							</div>
+						</div>
+
+						<div class="callout danger">
+							<strong>Important:</strong> Some actions are destructive. Always take a full backup before deleting media or overwriting originals during conversion.
+						</div>
+					</section>
+
+					<section class="card" id="modules">
+						<h2>Modules</h2>
+						<p>
+							HoatzinMedia uses a modular UI. You can enable/disable modules in the <span class="inline-code">Modules</span> tab.
+							Disabled modules are hidden from the menu.
+						</p>
+
+						<div class="grid-2" style="margin-top: 14px">
+							<div class="placeholder-shot">
+								<div>
+									<strong>Screenshot placeholder — Modules overview</strong>
+									<span>Replace this with a screenshot of the HoatzinMedia tabs and module toggles.</span>
+								</div>
+							</div>
+							<div class="placeholder-shot">
+								<div>
+									<strong>Screenshot placeholder — Settings screen</strong>
+									<span>Replace this with a screenshot of the Settings panel.</span>
+								</div>
+							</div>
+						</div>
+
+						<h3>Available modules</h3>
+						<ul>
+							<li><strong>Dashboard</strong>: overview metrics and server requirements.</li>
+							<li><strong>Smart Scan &amp; Unused Media</strong>: run unused scan, review results, delete unused.</li>
+							<li><strong>Large Files</strong>: lists attachments over a size threshold.</li>
+							<li><strong>Duplicate Checker</strong>: duplicate grouping (strategy: hash or legacy path).</li>
+							<li><strong>Convert (WebP / AVIF)</strong>: conversion settings and conversion jobs.</li>
+							<li><strong>Regenerate Thumbnails</strong>: rebuild intermediate sizes.</li>
+							<li><strong>Settings</strong>: global plugin settings.</li>
+						</ul>
+					</section>
+
+					<section class="card" id="smart-scan">
+						<h2>Smart scan &amp; unused media</h2>
+						<p>
+							The Smart Scan checks each attachment and determines whether it is referenced by your site. The results are stored and shown in a paginated list.
+						</p>
+
+						<h3>What “unused” means</h3>
+						<p>
+							An attachment is treated as used if it is referenced by common WordPress/WooCommerce signals. Examples include:
+						</p>
+						<ul>
+							<li>Site icon or custom logo</li>
+							<li>WooCommerce placeholder image</li>
+							<li>Featured image</li>
+							<li>WooCommerce product galleries</li>
+							<li>URLs or filenames found in post content</li>
+							<li>References stored in common builder metadata</li>
+						</ul>
+						<div class="callout">
+							<strong>Tip:</strong> Before deleting, open an item’s Usage panel in the media library to confirm it’s not used by a theme, CSS background, shortcodes, or custom code.
+						</div>
+
+						<h3>How to run a scan</h3>
+						<ol>
+							<li>Go to <span class="inline-code">WP Admin → HoatzinMedia → Smart Scan &amp; Unused Media</span>.</li>
+							<li>Click <strong>Run smart scan</strong>.</li>
+							<li>Wait for the scan to finish; scanning is batch-based to be friendlier on large libraries.</li>
+							<li>Review results in the <strong>Unused media files</strong> list.</li>
+						</ol>
+
+						<div class="grid-2">
+							<div class="placeholder-shot">
+								<div>
+									<strong>Screenshot placeholder — Scan progress</strong>
+									<span>Replace with a screenshot showing scan progress and totals.</span>
+								</div>
+							</div>
+							<div class="placeholder-shot">
+								<div>
+									<strong>Screenshot placeholder — Unused results list</strong>
+									<span>Replace with a screenshot showing the results table and bulk actions.</span>
+								</div>
+							</div>
+						</div>
+
+						<h3>Deleting unused items</h3>
+						<ol>
+							<li>Select one or more items.</li>
+							<li>Click <strong>Delete selected</strong>.</li>
+						</ol>
+						<div class="callout danger">
+							<strong>Deletion behavior:</strong> unused deletions are performed as permanent attachment deletion (hard delete). Make a backup first.
+						</div>
+					</section>
+
+					<section class="card" id="large-files">
+						<h2>Large files</h2>
+						<p>
+							The Large Files tool lists attachments over a selected threshold so you can quickly spot storage hogs.
+						</p>
+						<h3>How to use</h3>
+						<ol>
+							<li>Open <span class="inline-code">WP Admin → HoatzinMedia → Large Files</span>.</li>
+							<li>Select a threshold: <span class="inline-code">1 MB</span>, <span class="inline-code">3 MB</span>, or <span class="inline-code">5 MB</span>.</li>
+							<li>Review results (sorted by size) and decide whether to compress, replace, or remove files.</li>
+						</ol>
+						<div class="placeholder-shot" style="margin-top: 12px">
+							<div>
+								<strong>Screenshot placeholder — Large files table</strong>
+								<span>Replace with a screenshot of the large files results list (filename, size, link).</span>
+							</div>
+						</div>
+					</section>
+
+					<section class="card" id="duplicates">
+						<h2>Duplicate checker</h2>
+						<p>
+							Duplicate checking groups attachments that appear to be the same file. Two strategies are available:
+						</p>
+						<ul>
+							<li><strong>Hash strategy (recommended):</strong> groups by file content hash (md5 of the underlying file path).</li>
+							<li><strong>Path strategy (legacy):</strong> groups by the stored <span class="inline-code">_wp_attached_file</span> meta value.</li>
+						</ul>
+						<div class="callout">
+							<strong>Note:</strong> The duplicate-checking engine is available via the plugin’s REST endpoints. The UI may be limited depending on your build/module availability.
+						</div>
+						<div class="placeholder-shot" style="margin-top: 12px">
+							<div>
+								<strong>Screenshot placeholder — Duplicate groups</strong>
+								<span>Replace with a screenshot showing duplicate groups and the chosen strategy.</span>
+							</div>
+						</div>
+					</section>
+
+					<section class="card" id="converter">
+						<h2>Convert to WebP / AVIF</h2>
+						<p>
+							Convert JPEG/PNG images into modern formats (WebP/AVIF). HoatzinMedia supports both immediate conversion and background conversion jobs.
+						</p>
+
+						<h3>Before you convert</h3>
+						<ul>
+							<li>Take a full backup (conversion can overwrite originals depending on your workflow).</li>
+							<li>Confirm your server image editor supports the target format (GD/Imagick capabilities vary by host).</li>
+							<li>Start with a small batch and validate frontend output (theme, CDN, caching).</li>
+						</ul>
+
+						<h3>Converter settings</h3>
+						<p>
+							Open the converter settings panel and configure:
+						</p>
+						<ul>
+							<li><strong>Scope:</strong> uploads only, or uploads + theme directories (for scanning sources).</li>
+							<li><strong>Image types:</strong> JPEG, PNG, or both.</li>
+							<li><strong>Destination folder:</strong> separate folder or same folder.</li>
+							<li><strong>File extension handling:</strong> append or replace extension (WebP/AVIF variants).</li>
+							<li><strong>Destination structure:</strong> mirror source structure, image roots, or flat.</li>
+							<li><strong>Cache control:</strong> optional caching header behavior for served files.</li>
+							<li><strong>Prevent larger conversions:</strong> skip WebP output if it would be larger than the source.</li>
+						</ul>
+
+						<h3>Conversion modes</h3>
+						<ul>
+							<li><strong>Convert now:</strong> converts selected IDs directly.</li>
+							<li><strong>Background job:</strong> enqueues a job, then you can check status/logs and pause/resume/cancel.</li>
+						</ul>
+
+						<div class="placeholder-shot" style="margin-top: 12px">
+							<div>
+								<strong>Screenshot placeholder — Converter UI</strong>
+								<span>Replace with a screenshot showing format selection, quality, and conversion settings.</span>
+							</div>
+						</div>
+					</section>
+
+					<section class="card" id="regenerate">
+						<h2>Regenerate thumbnails</h2>
+						<p>
+							Regenerating thumbnails recreates intermediate image sizes (registered by WordPress, themes, and plugins). This is useful after changing image sizes or switching themes.
+						</p>
+
+						<h3>How to use</h3>
+						<ol>
+							<li>Go to <span class="inline-code">WP Admin → HoatzinMedia → Regenerate Thumbnails</span>.</li>
+							<li>Select items (or choose the global select option).</li>
+							<li>Click <strong>Regenerate thumbnails</strong> and confirm.</li>
+							<li>Review any errors and re-run for failed items if needed.</li>
+						</ol>
+
+						<div class="callout danger">
+							<strong>Important:</strong> Regenerating thumbnails can overwrite derived image sizes. Back up first on production sites.
+						</div>
+
+						<div class="placeholder-shot" style="margin-top: 12px">
+							<div>
+								<strong>Screenshot placeholder — Regenerate thumbnails list</strong>
+								<span>Replace with a screenshot showing selection and regeneration action.</span>
+							</div>
+						</div>
+					</section>
+
+					<section class="card" id="media-library-ui">
+						<h2>Media library enhancements</h2>
+						<p>
+							HoatzinMedia can enhance the built-in Media Library to make day-to-day cleanup easier.
+						</p>
+
+						<h3>Media stats strip (grid view)</h3>
+						<ul>
+							<li>Shows total media count and counts by type (images, video, audio, documents) in the Media Library grid view.</li>
+							<li>Automatically positions itself even if other plugins modify the media header area.</li>
+						</ul>
+
+						<h3>File extension label (optional)</h3>
+						<ul>
+							<li>Adds a small label like <span class="inline-code">webp</span>, <span class="inline-code">jpg</span>, <span class="inline-code">png</span> on each grid item.</li>
+							<li>Enable it from Settings (see <a href="#settings">Settings</a>).</li>
+						</ul>
+
+						<h3>Attachment usage (optional)</h3>
+						<ul>
+							<li>Adds a “Usage” action to help confirm where a file is referenced before deleting it.</li>
+							<li>Requires logged-in users with upload permissions and a valid REST nonce.</li>
+						</ul>
+
+						<div class="grid-2">
+							<div class="placeholder-shot">
+								<div>
+									<strong>Screenshot placeholder — Media library stats</strong>
+									<span>Replace with a screenshot of the stats strip in the Media Library grid.</span>
+								</div>
+							</div>
+							<div class="placeholder-shot">
+								<div>
+									<strong>Screenshot placeholder — Usage panel</strong>
+									<span>Replace with a screenshot of the Usage panel/modal for an attachment.</span>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section class="card" id="settings">
+						<h2>Settings</h2>
+						<p>
+							Open <span class="inline-code">WP Admin → HoatzinMedia → Settings</span> to configure global behavior.
+						</p>
+
+						<h3>General settings</h3>
+						<ul>
+							<li><strong>Max file size:</strong> used by some modules to prioritize heavy assets.</li>
+							<li><strong>Scan schedule:</strong> manual, every 3 hours, daily, weekly, monthly.</li>
+							<li><strong>Items per page:</strong> pagination size for certain lists.</li>
+							<li><strong>Unused media age (days):</strong> helps tune what “recent uploads” should be treated as (0–3650).</li>
+						</ul>
+
+						<h3>Media Library UI</h3>
+						<ul>
+							<li><strong>Enable image extension label</strong>: show extensions on Media Library grid items.</li>
+							<li><strong>Enable media usage button</strong>: show usage details in the Media Library.</li>
+						</ul>
+
+						<h3>WebP serving &amp; quality</h3>
+						<ul>
+							<li><strong>Enable WebP serving</strong>: may update rewrite rules for serving WebP where applicable.</li>
+							<li><strong>WebP quality</strong>: 1–100.</li>
+							<li><strong>Auto-convert uploads</strong>: disabled, WebP, or AVIF.</li>
+						</ul>
+					</section>
+
+					<section class="card" id="troubleshooting">
+						<h2>Troubleshooting</h2>
+						<h3>Smart scan shows files as unused but they are used</h3>
+						<ul>
+							<li>Check if the file is used in theme CSS, custom blocks, shortcodes, or a builder not covered by scanner patterns.</li>
+							<li>Use the Media Library “Usage” feature to confirm detected usage contexts.</li>
+							<li>Run scan again after clearing caches and updating content.</li>
+						</ul>
+
+						<h3>Conversion fails or formats are unsupported</h3>
+						<ul>
+							<li>Verify GD/Imagick is installed and supports WebP/AVIF on your server.</li>
+							<li>Try a smaller batch and check the background job log for details.</li>
+							<li>Confirm filesystem permissions to create new files in uploads.</li>
+						</ul>
+
+						<h3>Regenerate thumbnails is slow</h3>
+						<ul>
+							<li>Large libraries can take time. Regenerate in smaller batches.</li>
+							<li>Ensure your PHP memory limit and execution time are adequate.</li>
+						</ul>
+					</section>
+
+					<section class="card" id="developer">
+						<h2>Developer notes</h2>
+						<p>
+							HoatzinMedia uses REST endpoints under <span class="inline-code">/wp-json/hoatzinmedia/v1</span>. Most endpoints require <span class="inline-code">manage_options</span> plus a valid <span class="inline-code">X-WP-Nonce</span> header.
+						</p>
+
+						<h3>Common REST endpoints</h3>
+						<pre><code>GET    /hoatzinmedia/v1/dashboard
+POST   /hoatzinmedia/v1/scan
+GET    /hoatzinmedia/v1/unused-results?page=1&amp;limit=20
+POST   /hoatzinmedia/v1/delete-unused
+POST   /hoatzinmedia/v1/delete-unused-all
+GET    /hoatzinmedia/v1/large-files?size=3&amp;page=1&amp;per_page=20
+GET    /hoatzinmedia/v1/duplicates?strategy=hash&amp;page=1&amp;per_page=20
+GET    /hoatzinmedia/v1/attachment-usage?attachment_id=123&amp;limit=20
+GET    /hoatzinmedia/v1/settings
+POST   /hoatzinmedia/v1/settings
+GET    /hoatzinmedia/v1/converter-settings
+POST   /hoatzinmedia/v1/converter-settings
+GET    /hoatzinmedia/v1/image-formats/library?page=1&amp;per_page=20
+POST   /hoatzinmedia/v1/image-formats/background
+GET    /hoatzinmedia/v1/image-formats/background/status?job_id=...
+GET    /hoatzinmedia/v1/regenerate/library?page=1&amp;per_page=20
+POST   /hoatzinmedia/v1/regenerate</code></pre>
+
+						<h3>Translation</h3>
+						<p>
+							For translation, reference the <span class="inline-code">hoatzinmedia-library-cleaner</span> text domain used across PHP and JavaScript.
+						</p>
+
+						<div class="footer">
+							<a href="#top">Back to top</a>
+						</div>
+					</section>
+				</main>
+			</div>
+		</div>
+		<script>
+			;(() => {
+				const nav = document.querySelector('nav')
+				if (!nav) return
+
+				const header = document.querySelector('.topbar')
+				const headerHeight = header ? header.getBoundingClientRect().height : 0
+
+				const links = Array.from(nav.querySelectorAll('.nav-list a[href^="#"]'))
+				const linkById = new Map()
+
+				for (const a of links) {
+					const href = a.getAttribute('href') || ''
+					const id = decodeURIComponent(href.replace(/^#/, ''))
+					if (id) linkById.set(id, a)
+				}
+
+				const sectionIds = Array.from(linkById.keys())
+				const sections = sectionIds
+					.map((id) => document.getElementById(id))
+					.filter((el) => el && el instanceof HTMLElement)
+
+				function setActive(id) {
+					for (const a of links) a.classList.remove('is-active')
+					const active = id ? linkById.get(id) : null
+					if (active) active.classList.add('is-active')
+				}
+
+				function initial() {
+					const hash = (window.location.hash || '').replace(/^#/, '')
+					if (hash) {
+						setActive(decodeURIComponent(hash))
+						return
+					}
+					if (sections.length) setActive(sections[0].id)
+				}
+
+				initial()
+
+				const observer = new IntersectionObserver(
+					(entries) => {
+						const visible = entries.filter((e) => e.isIntersecting)
+						if (!visible.length) return
+						visible.sort((a, b) => {
+							if (b.intersectionRatio !== a.intersectionRatio) {
+								return b.intersectionRatio - a.intersectionRatio
+							}
+							return a.boundingClientRect.top - b.boundingClientRect.top
+						})
+						const best = visible[0]
+						if (best && best.target && best.target.id) setActive(best.target.id)
+					},
+					{
+						root: null,
+						rootMargin: `-${Math.round(headerHeight + 18)}px 0px -70% 0px`,
+						threshold: [0, 0.15, 0.3, 0.5, 0.75, 1],
+					}
+				)
+
+				for (const s of sections) observer.observe(s)
+
+				window.addEventListener('hashchange', () => {
+					const hash = (window.location.hash || '').replace(/^#/, '')
+					if (hash) setActive(decodeURIComponent(hash))
+				})
+			})()
+		</script>
+	</body>
+</html>
+
