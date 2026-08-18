@@ -69,7 +69,10 @@ export default function App() {
 		if (moduleSlug === 'hoatzinmedia-large-files' || moduleSlug === 'large_files') {
 			return 'storageOptimizer'
 		}
-		if (moduleSlug === 'hoatzinmedia-settings' || moduleSlug === 'settings' || moduleSlug === 'general_settings') {
+		if (moduleSlug === 'hoatzinmedia-general-settings' || moduleSlug === 'general_settings') {
+			return 'general_settings'
+		}
+		if (moduleSlug === 'hoatzinmedia-settings' || moduleSlug === 'settings') {
 			return 'settings'
 		}
 		return 'dashboard'

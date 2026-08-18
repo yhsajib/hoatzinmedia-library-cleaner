@@ -231,6 +231,16 @@ class Admin {
 			'hoatzinmedia-settings',
 			array( $this, 'render_app' )
 		);
+
+		// 9. Settings
+		add_submenu_page(
+			'hoatzinmedia',
+			__( 'Settings', 'hoatzinmedia-library-cleaner' ),
+			__( 'Settings', 'hoatzinmedia-library-cleaner' ),
+			'manage_options',
+			'hoatzinmedia-general-settings',
+			array( $this, 'render_app' )
+		);
 	}
 
 	public function enqueue_assets( $hook_suffix ) {

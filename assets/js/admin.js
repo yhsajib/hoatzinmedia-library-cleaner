@@ -54,6 +54,10 @@
 			id: 'settings',
 			label: i18n.__('Modules', HM_TEXT_DOMAIN),
 		},
+		{
+			id: 'general_settings',
+			label: i18n.__('Settings', HM_TEXT_DOMAIN),
+		},
 	]
 
 	function hmNormalizeApiError(err) {
