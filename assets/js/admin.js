@@ -27,38 +27,33 @@
 			label: i18n.__('Dashboard', HM_TEXT_DOMAIN),
 		},
 		{
+			id: 'hoatzinmedia-folders',
+			label: i18n.__('Virtual Media Folders', HM_TEXT_DOMAIN),
+		},
+		{
 			id: 'smart_scan',
 			label: i18n.__('Smart Scan & Unused Media', HM_TEXT_DOMAIN),
 		},
 		{
 			id: 'duplicates',
-			label: i18n.__('Duplicate Checker', HM_TEXT_DOMAIN),
-		},
-		{
-			id: 'image_formats',
-			label: i18n.__('Convert (WebP / AVIF)', HM_TEXT_DOMAIN),
+			label: i18n.__('Duplicate Finder', HM_TEXT_DOMAIN),
 		},
 		{
 			id: 'large_files',
-			label: i18n.__('Large Files', HM_TEXT_DOMAIN),
+			label: i18n.__('Storage Optimizer', HM_TEXT_DOMAIN),
 		},
 		{
 			id: 'regenerate',
 			label: i18n.__('Regenerate Thumbnails', HM_TEXT_DOMAIN),
 		},
 		{
-			id: 'svg_support',
-			label: i18n.__('SVG Support', HM_TEXT_DOMAIN),
+			id: 'image_formats',
+			label: i18n.__('Convert to WebP / AVIF', HM_TEXT_DOMAIN),
 		},
 		{
 			id: 'settings',
 			label: i18n.__('Modules', HM_TEXT_DOMAIN),
 		},
-		{
-			id: 'general_settings',
-			label: i18n.__('Settings', HM_TEXT_DOMAIN),
-		},
-		
 	]
 
 	function hmNormalizeApiError(err) {
@@ -8616,6 +8611,44 @@
 				)
 			)
 
+		} else if (moduleName === 'hoatzinmedia-folders') {
+			children.push(
+				element.createElement(
+					'div',
+					{ key: 'folders-layout', className: 'hm-layout hm-layout-full', style: { marginTop: '18px' } },
+					element.createElement(
+						'div',
+						{ className: 'hm-panel' },
+						element.createElement(
+							'div',
+							{ className: 'hm-panel-header' },
+							element.createElement(
+								'div',
+								null,
+								element.createElement(
+									'div',
+									{ className: 'hm-panel-title' },
+									i18n.__('Virtual Media Folders', 'hoatzinmedia')
+								),
+								element.createElement(
+									'div',
+									{ className: 'hm-panel-subtitle' },
+									i18n.__('Organize your media library with virtual folders without altering physical file paths on server disk.', 'hoatzinmedia')
+								)
+							)
+						),
+						element.createElement(
+							'div',
+							{ style: { padding: '20px' } },
+							element.createElement(
+								'a',
+								{ href: 'upload.php', className: 'button button-primary' },
+								i18n.__('Open Media Library to Manage Folders', 'hoatzinmedia')
+							)
+						)
+					)
+				)
+			)
 		} else if (moduleName === 'smart_scan') {
 			children.push(
 				element.createElement(
