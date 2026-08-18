@@ -51,22 +51,25 @@ export default function App() {
 		if (!moduleSlug || typeof moduleSlug !== 'string') {
 			return 'dashboard'
 		}
-		if (moduleSlug === 'smart_scan' || moduleSlug === 'unused_media') {
+		if (moduleSlug === 'hoatzinmedia-folders' || moduleSlug === 'folders' || moduleSlug === 'mediaFolders') {
+			return 'mediaFolders'
+		}
+		if (moduleSlug === 'hoatzinmedia-smart-scan' || moduleSlug === 'smart_scan' || moduleSlug === 'unused_media') {
 			return 'smartScan'
 		}
-		if (moduleSlug === 'duplicates') {
+		if (moduleSlug === 'hoatzinmedia-duplicates' || moduleSlug === 'duplicates') {
 			return 'duplicateFinder'
 		}
-		if (moduleSlug === 'image_formats') {
+		if (moduleSlug === 'hoatzinmedia-image-formats' || moduleSlug === 'image_formats') {
 			return 'imageConverter'
 		}
-		if (moduleSlug === 'regenerate') {
+		if (moduleSlug === 'hoatzinmedia-regenerate' || moduleSlug === 'regenerate') {
 			return 'regenerate'
 		}
-		if (moduleSlug === 'large_files') {
+		if (moduleSlug === 'hoatzinmedia-large-files' || moduleSlug === 'large_files') {
 			return 'storageOptimizer'
 		}
-		if (moduleSlug === 'settings' || moduleSlug === 'general_settings') {
+		if (moduleSlug === 'hoatzinmedia-settings' || moduleSlug === 'settings' || moduleSlug === 'general_settings') {
 			return 'settings'
 		}
 		return 'dashboard'
@@ -79,6 +82,15 @@ export default function App() {
 
 		const validIds = modulesConfig.map((c) => c.id)
 		const url = new URL(window.location.href)
+
+		const pageParam = url.searchParams.get('page')
+		if (pageParam && pageParam !== 'hoatzinmedia') {
+			const mappedPage = mapLegacyModuleSlugToTabId(pageParam)
+			if (mappedPage && validIds.includes(mappedPage)) {
+				return mappedPage
+			}
+		}
+
 		const fromQuery = url.searchParams.get(TAB_QUERY_PARAM)
 		if (fromQuery && validIds.includes(fromQuery)) {
 			return fromQuery

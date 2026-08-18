@@ -28,9 +28,16 @@ class Scan_Controller {
             'hoatzinmedia/v1',
             '/scan',
             [
-                'methods'             => 'POST',
-                'callback'            => [ $this, 'handle_scan' ],
-                'permission_callback' => [ $this, 'permissions_check' ],
+                [
+                    'methods'             => 'POST',
+                    'callback'            => [ $this, 'handle_scan' ],
+                    'permission_callback' => [ $this, 'permissions_check' ],
+                ],
+                [
+                    'methods'             => 'GET',
+                    'callback'            => [ $this, 'get_scan_status' ],
+                    'permission_callback' => [ $this, 'permissions_check' ],
+                ],
             ]
         );
     }
@@ -77,10 +84,28 @@ class Scan_Controller {
         return $this->continue_scan( $scan_id );
     }
 
+    public function get_scan_status( $request ) {
+        $lock_scan_id = get_transient( 'hoatzinmedia_scan_lock' );
+        if ( $lock_scan_id && is_string( $lock_scan_id ) ) {
+            $state = Scanner::get_instance()->get_scan_state( $lock_scan_id );
+            if ( is_array( $state ) && ! empty( $state['scan_id'] ) && empty( $state['finished'] ) ) {
+                $response = $this->build_response( $state );
+                $data = $response->get_data();
+                $data['active'] = true;
+                return new \WP_REST_Response( $data );
+            }
+        }
+        return new \WP_REST_Response( [ 'active' => false ] );
+    }
+
     private function start_new_scan() {
         $lock_scan_id = get_transient( 'hoatzinmedia_scan_lock' );
 
         if ( $lock_scan_id && is_string( $lock_scan_id ) ) {
+            $existing = Scanner::get_instance()->get_scan_state( $lock_scan_id );
+            if ( is_array( $existing ) && ! empty( $existing['scan_id'] ) && empty( $existing['finished'] ) ) {
+                return $this->process_batch( $existing );
+            }
             delete_transient( 'hoatzinmedia_scan_lock' );
             delete_transient( 'hoatzinmedia_scan_' . $lock_scan_id );
             delete_transient( 'hoatzinmedia_scan_found_' . $lock_scan_id );
@@ -121,12 +146,13 @@ class Scan_Controller {
     private function build_response( array $state ) {
         return new \WP_REST_Response(
             [
-                'scan_id'     => $state['scan_id'],
-                'processed'   => $state['processed'],
-                'total'       => $state['total'],
-                'found'       => $state['found'],
-                'found_bytes' => $state['found_bytes'],
-                'finished'    => $state['finished'],
+                'scan_id'     => isset( $state['scan_id'] ) ? $state['scan_id'] : '',
+                'processed'   => isset( $state['processed'] ) ? (int) $state['processed'] : 0,
+                'total'       => isset( $state['total'] ) ? (int) $state['total'] : 0,
+                'found'       => isset( $state['found'] ) ? (int) $state['found'] : 0,
+                'found_bytes' => isset( $state['found_bytes'] ) ? (int) $state['found_bytes'] : 0,
+                'finished'    => isset( $state['finished'] ) ? (bool) $state['finished'] : false,
+                'logs'        => isset( $state['logs'] ) && is_array( $state['logs'] ) ? $state['logs'] : [],
             ]
         );
     }

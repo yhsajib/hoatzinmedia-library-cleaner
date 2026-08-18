@@ -47,6 +47,9 @@ class Scanner {
             'found_bytes'    => 0,
             'finished'       => false,
             'cursor_last_id' => 0,
+            'logs'           => [
+                '[' . gmdate( 'H:i:s' ) . '] Initialize unused media scan (' . (int) $total . ' total attachments).'
+            ],
         ];
 
         set_transient( 'hoatzinmedia_scan_lock', $scan_id, 6 * HOUR_IN_SECONDS );
@@ -152,6 +155,8 @@ class Scanner {
 
         $processed_in_this_request = 0;
         $last_processed_id = 0;
+        $batch_unused_count = 0;
+        $logs = isset( $state['logs'] ) && is_array( $state['logs'] ) ? $state['logs'] : [];
 
         foreach ( $batch_ids as $attachment_id ) {
             if ( ( microtime( true ) - $batch_started_at ) >= $time_budget_seconds ) {
@@ -171,6 +176,9 @@ class Scanner {
                 $found_ids[] = $attachment_id;
                 $found++;
                 $found_bytes += $size_bytes;
+                $batch_unused_count++;
+                $file_name = wp_basename( (string) get_post_meta( $attachment_id, '_wp_attached_file', true ) );
+                $logs[] = '[' . gmdate( 'H:i:s' ) . '] [FOUND] Unused file: #' . $attachment_id . ( $file_name ? ' (' . $file_name . ')' : '' ) . ' - ' . ( $size_bytes > 0 ? size_format( $size_bytes ) : '0 B' );
             }
         }
 
@@ -190,10 +198,19 @@ class Scanner {
             $state['cursor_last_id'] = $cursor_last_id;
         }
 
+        $logs[] = '[' . gmdate( 'H:i:s' ) . '] [BATCH] Processed ' . $processed_in_this_request . ' items (' . $processed . '/' . $total . ' total). Found ' . $batch_unused_count . ' unused in batch.';
+
         if ( $total > 0 && $processed >= $total ) {
             $state['finished'] = true;
+            $logs[] = '[' . gmdate( 'H:i:s' ) . '] [DONE] Unused media scan completed. Total unused found: ' . $found . ' (' . size_format( $found_bytes ) . ' saved). Cache saved for fast loading.';
             delete_transient( 'hoatzinmedia_scan_lock' );
         }
+
+        // Limit log entries stored to last 100 to keep state light
+        if ( count( $logs ) > 150 ) {
+            $logs = array_slice( $logs, -150 );
+        }
+        $state['logs'] = $logs;
 
         if ( $scan_id ) {
             $found_ids = array_values( array_unique( array_map( 'intval', is_array( $found_ids ) ? $found_ids : [] ) ) );
@@ -265,6 +282,7 @@ class Scanner {
             'total'       => isset( $state['total'] ) ? (int) $state['total'] : 0,
             'found'       => isset( $state['found'] ) ? (int) $state['found'] : count( $found_ids ),
             'found_bytes' => isset( $state['found_bytes'] ) ? (int) $state['found_bytes'] : 0,
+            'logs'        => isset( $state['logs'] ) && is_array( $state['logs'] ) ? $state['logs'] : [],
         ];
 
         update_option( 'hoatzinmedia_last_unused_meta', $meta, false );

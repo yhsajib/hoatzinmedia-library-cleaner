@@ -46,8 +46,10 @@ final class Plugin {
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Service/class-converter.php';	
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Service/class-webp-server.php';
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Service/class-svg-support.php';
+		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Service/class-folders-manager.php';
 		Service\Scheduler::get_instance();
 		Service\Svg_Support::get_instance();
+		Service\Folders_Manager::get_instance();
 		
 
 		add_action(
@@ -172,8 +174,10 @@ final class Plugin {
 	private function init_admin() {
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Admin/class-admin.php';
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Admin/class-media-library-ui.php';
+		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Admin/class-folders-ui.php';
 		Admin\Admin::get_instance();
 		Admin\Media_Library_UI::get_instance();
+		Admin\Folders_UI::get_instance();
 	}
 
 	/**
@@ -191,6 +195,7 @@ final class Plugin {
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Rest/class-settings-controller.php';
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Rest/class-converter-settings-controller.php';
 		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Rest/class-regenerate-controller.php';
+		require_once HOATZINMEDIA_PLUGIN_DIR . 'includes/Rest/class-folders-controller.php';
 		Rest\Rest_Controller::get_instance();
 		Rest\Dashboard_Controller::get_instance();
 		Rest\Scan_Controller::get_instance();
@@ -202,5 +207,6 @@ final class Plugin {
 		Rest\Settings_Controller::get_instance();
 		Rest\Converter_Settings_Controller::get_instance();
 		Rest\Regenerate_Controller::get_instance();
+		Rest\Folders_Controller::get_instance();
 	}
 }

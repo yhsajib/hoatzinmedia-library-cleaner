@@ -32,15 +32,35 @@ class Duplicates_Controller {
                 'callback'            => [ $this, 'get_duplicates' ],
                 'permission_callback' => [ $this, 'permissions_check' ],
                 'args'                => [
-                    'page'     => [
+                    'page'       => [
                         'sanitize_callback' => 'absint',
                     ],
-                    'per_page' => [
+                    'per_page'   => [
                         'sanitize_callback' => 'absint',
                     ],
-                    'strategy' => [
+                    'strategy'   => [
                         'sanitize_callback' => 'sanitize_text_field',
                     ],
+                    'force_scan' => [
+                        'sanitize_callback' => 'absint',
+                    ],
+                ],
+            ]
+        );
+
+        register_rest_route(
+            'hoatzinmedia/v1',
+            '/duplicates/scan',
+            [
+                [
+                    'methods'             => 'POST',
+                    'callback'            => [ $this, 'handle_scan' ],
+                    'permission_callback' => [ $this, 'permissions_check' ],
+                ],
+                [
+                    'methods'             => 'GET',
+                    'callback'            => [ $this, 'get_scan_status' ],
+                    'permission_callback' => [ $this, 'permissions_check' ],
                 ],
             ]
         );
@@ -56,7 +76,7 @@ class Duplicates_Controller {
                     'attachment_id' => [
                         'sanitize_callback' => 'absint',
                     ],
-                    'limit' => [
+                    'limit'         => [
                         'sanitize_callback' => 'absint',
                     ],
                 ],
@@ -123,6 +143,7 @@ class Duplicates_Controller {
         $page = (int) $request->get_param( 'page' );
         $per_page = (int) $request->get_param( 'per_page' );
         $strategy = (string) $request->get_param( 'strategy' );
+        $force_scan = (bool) $request->get_param( 'force_scan' );
 
         if ( $page <= 0 ) {
             $page = 1;
@@ -132,6 +153,39 @@ class Duplicates_Controller {
             $per_page = 20;
         } elseif ( $per_page > 100 ) {
             $per_page = 100;
+        }
+
+        $cached_data = get_option( 'hoatzinmedia_duplicate_results', null );
+
+        if ( ! $force_scan && is_array( $cached_data ) && isset( $cached_data['groups'] ) ) {
+            $all_groups = is_array( $cached_data['groups'] ) ? $cached_data['groups'] : [];
+            $total_groups = count( $all_groups );
+            $total_pages = $per_page > 0 && $total_groups > 0 ? (int) ceil( $total_groups / $per_page ) : 0;
+            $offset = ( $page - 1 ) * $per_page;
+            $paged_groups = array_slice( $all_groups, $offset, $per_page );
+
+            return new \WP_REST_Response( [
+                'scanned'      => true,
+                'last_scanned' => isset( $cached_data['finished_at'] ) ? $cached_data['finished_at'] : '',
+                'page'         => $page,
+                'per_page'     => $per_page,
+                'total'        => $total_groups,
+                'total_pages'  => $total_pages,
+                'groups'       => $paged_groups,
+                'logs'         => isset( $cached_data['logs'] ) && is_array( $cached_data['logs'] ) ? $cached_data['logs'] : [],
+            ] );
+        }
+
+        if ( ! $force_scan && null === $cached_data ) {
+            return new \WP_REST_Response( [
+                'scanned'     => false,
+                'page'        => $page,
+                'per_page'    => $per_page,
+                'total'       => 0,
+                'total_pages' => 0,
+                'groups'      => [],
+                'logs'        => [],
+            ] );
         }
 
         // Advanced duplicate strategies:
@@ -481,5 +535,200 @@ class Duplicates_Controller {
                 'usages'        => $usages,
             ]
         );
+    }
+
+    public function get_scan_status( $request ) {
+        $lock = get_transient( 'hoatzinmedia_dup_scan_lock' );
+        if ( $lock && is_string( $lock ) ) {
+            $state = get_transient( 'hoatzinmedia_dup_scan_' . $lock );
+            if ( is_array( $state ) && ! empty( $state['scan_id'] ) && empty( $state['finished'] ) ) {
+                return new \WP_REST_Response( [
+                    'active'       => true,
+                    'scan_id'      => $state['scan_id'],
+                    'processed'    => isset( $state['processed'] ) ? (int) $state['processed'] : 0,
+                    'total'        => isset( $state['total'] ) ? (int) $state['total'] : 0,
+                    'found_groups' => isset( $state['by_hash'] ) ? count( $state['by_hash'] ) : 0,
+                    'finished'     => false,
+                    'logs'         => isset( $state['logs'] ) && is_array( $state['logs'] ) ? $state['logs'] : [],
+                ] );
+            }
+        }
+        return new \WP_REST_Response( [ 'active' => false ] );
+    }
+
+    public function handle_scan( $request ) {
+        $scan_id = sanitize_text_field( (string) $request->get_param( 'scan_id' ) );
+        $force_new = (bool) $request->get_param( 'force_new' );
+
+        if ( '' === $scan_id ) {
+            $lock = get_transient( 'hoatzinmedia_dup_scan_lock' );
+            if ( ! $force_new && $lock && is_string( $lock ) ) {
+                $existing = get_transient( 'hoatzinmedia_dup_scan_' . $lock );
+                if ( is_array( $existing ) && ! empty( $existing['scan_id'] ) && empty( $existing['finished'] ) ) {
+                    $scan_id = $lock;
+                    $state = $existing;
+                }
+            }
+
+            if ( '' === $scan_id ) {
+                if ( $lock ) {
+                    delete_transient( 'hoatzinmedia_dup_scan_lock' );
+                    delete_transient( 'hoatzinmedia_dup_scan_' . $lock );
+                }
+
+                $scan_id = 'hm_dup_scan_' . wp_generate_uuid4();
+                $attachment_ids = get_posts( [
+                    'post_type'      => 'attachment',
+                    'post_status'    => 'inherit',
+                    'fields'         => 'ids',
+                    'posts_per_page' => -1,
+                    'orderby'        => 'ID',
+                    'order'          => 'ASC',
+                ] );
+                if ( ! is_array( $attachment_ids ) ) {
+                    $attachment_ids = [];
+                }
+                $total = count( $attachment_ids );
+
+                $state = [
+                    'scan_id'        => $scan_id,
+                    'total'          => $total,
+                    'processed'      => 0,
+                    'cursor_index'   => 0,
+                    'attachment_ids' => $attachment_ids,
+                    'by_hash'        => [],
+                    'finished'       => false,
+                    'logs'           => [
+                        '[' . gmdate( 'H:i:s' ) . '] Initialized duplicate check scan (' . (int) $total . ' attachments).'
+                    ],
+                ];
+
+                set_transient( 'hoatzinmedia_dup_scan_lock', $scan_id, HOUR_IN_SECONDS );
+                set_transient( 'hoatzinmedia_dup_scan_' . $scan_id, $state, HOUR_IN_SECONDS );
+            }
+        } else {
+            $state = get_transient( 'hoatzinmedia_dup_scan_' . $scan_id );
+            if ( ! is_array( $state ) ) {
+                return new \WP_Error( 'hoatzinmedia_scan_not_found', esc_html__( 'Duplicate scan expired or invalid.', 'hoatzinmedia-library-cleaner' ), [ 'status' => 404 ] );
+            }
+        }
+
+        $batch_size = 30;
+        $attachment_ids = isset( $state['attachment_ids'] ) && is_array( $state['attachment_ids'] ) ? $state['attachment_ids'] : [];
+        $total = count( $attachment_ids );
+        $cursor = isset( $state['cursor_index'] ) ? (int) $state['cursor_index'] : 0;
+        $by_hash = isset( $state['by_hash'] ) && is_array( $state['by_hash'] ) ? $state['by_hash'] : [];
+        $logs = isset( $state['logs'] ) && is_array( $state['logs'] ) ? $state['logs'] : [];
+
+        $batch_ids = array_slice( $attachment_ids, $cursor, $batch_size );
+        $batch_processed = 0;
+        $batch_dups_found = 0;
+
+        foreach ( $batch_ids as $aid ) {
+            $aid = (int) $aid;
+            if ( $aid <= 0 ) {
+                continue;
+            }
+            $batch_processed++;
+
+            $file_path = get_attached_file( $aid );
+            if ( ! $file_path || ! @is_readable( $file_path ) ) {
+                continue;
+            }
+            $hash = @md5_file( $file_path );
+            if ( ! $hash ) {
+                continue;
+            }
+
+            $file_size = 0;
+            $size_raw = @filesize( $file_path );
+            if ( false !== $size_raw && $size_raw > 0 ) {
+                $file_size = (int) $size_raw;
+            }
+            $file_url = wp_get_attachment_url( $aid );
+            $file_name = wp_basename( (string) get_post_meta( $aid, '_wp_attached_file', true ) );
+            $date_uploaded = get_post_field( 'post_date', $aid );
+
+            if ( ! isset( $by_hash[$hash] ) ) {
+                $by_hash[$hash] = [];
+            }
+            $by_hash[$hash][] = [
+                'attachment_id'   => $aid,
+                'file_name'       => $file_name ? sanitize_file_name( $file_name ) : '',
+                'file_size'       => $file_size > 0 ? size_format( $file_size ) : '',
+                'file_size_bytes' => $file_size,
+                'file_url'        => $file_url ? esc_url_raw( $file_url ) : '',
+                'date_uploaded'   => $date_uploaded ? sanitize_text_field( (string) $date_uploaded ) : '',
+            ];
+
+            if ( count( $by_hash[$hash] ) === 2 ) {
+                $batch_dups_found++;
+                $logs[] = '[' . gmdate( 'H:i:s' ) . '] [FOUND] Duplicate group detected for ' . ( $file_name ? $file_name : 'ID #' . $aid );
+            }
+        }
+
+        $cursor += $batch_processed;
+        $state['cursor_index'] = $cursor;
+        $state['processed'] = min( $total, $cursor );
+        $state['by_hash'] = $by_hash;
+
+        $logs[] = '[' . gmdate( 'H:i:s' ) . '] [BATCH] Processed ' . $batch_processed . ' items (' . $state['processed'] . '/' . $total . ' total).';
+
+        if ( $cursor >= $total || empty( $batch_ids ) ) {
+            $state['finished'] = true;
+            delete_transient( 'hoatzinmedia_dup_scan_lock' );
+
+            $groups = [];
+            $total_wasted = 0;
+            foreach ( $by_hash as $hash_key => $items ) {
+                if ( count( $items ) < 2 ) {
+                    continue;
+                }
+                $first_name = isset( $items[0]['file_name'] ) ? $items[0]['file_name'] : '';
+                for ( $i = 1; $i < count( $items ); $i++ ) {
+                    $total_wasted += isset( $items[$i]['file_size_bytes'] ) ? (int) $items[$i]['file_size_bytes'] : 0;
+                }
+                $groups[] = [
+                    'group_key'  => $hash_key,
+                    'file_name'  => $first_name,
+                    'duplicates' => count( $items ),
+                    'items'      => $items,
+                ];
+            }
+
+            usort( $groups, function ( $a, $b ) {
+                return ( (int) $b['duplicates'] ) - ( (int) $a['duplicates'] );
+            } );
+
+            $logs[] = '[' . gmdate( 'H:i:s' ) . '] [DONE] Duplicate scan finished! Found ' . count( $groups ) . ' duplicate group(s) (' . size_format( $total_wasted ) . ' potential space saved). Cache saved for fast loading.';
+
+            $cache_payload = [
+                'finished_at'  => gmdate( 'c' ),
+                'groups'       => $groups,
+                'total_groups' => count( $groups ),
+                'total_wasted' => $total_wasted,
+                'logs'         => $logs,
+            ];
+            update_option( 'hoatzinmedia_duplicate_results', $cache_payload, false );
+
+            $ver = (int) get_option( 'hoatzinmedia_cache_ver', 1 );
+            update_option( 'hoatzinmedia_cache_ver', $ver + 1, false );
+        }
+
+        if ( count( $logs ) > 150 ) {
+            $logs = array_slice( $logs, -150 );
+        }
+        $state['logs'] = $logs;
+
+        set_transient( 'hoatzinmedia_dup_scan_' . $scan_id, $state, HOUR_IN_SECONDS );
+
+        return new \WP_REST_Response( [
+            'scan_id'      => $scan_id,
+            'processed'    => $state['processed'],
+            'total'        => $total,
+            'found_groups' => isset( $groups ) ? count( $groups ) : count( $by_hash ),
+            'finished'     => $state['finished'],
+            'logs'         => $state['logs'],
+        ] );
     }
 }

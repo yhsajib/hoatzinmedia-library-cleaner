@@ -1317,11 +1317,11 @@
 	align-items: flex-start;
 	gap: 20px;
 	min-height: 150px;
+	width: 100%;
 }
 
 .hm-smartscan-card {
-	width: 420px;
-	max-width: 100%;
+	width: 100%;
 	background-color: #ffffff;
 	border-radius: 10px;
 	border: 1px solid rgba(15, 23, 42, 0.12);
@@ -1347,9 +1347,9 @@
 }
 
 .hm-smartscan-card .hm-button-primary {
-	width: 100%;
+	width: auto;
 	border-radius: 6px;
-	padding: 12px 14px;
+	padding: 8px 16px;
 	font-size: 14px;
 	box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
 }
@@ -2961,4 +2961,249 @@ body.admin-bar .hm-settings-side-panel {
 }
 .minht-600{
 	min-height: 600px;
+}
+
+/* --- Pre-Scan Prompt State --- */
+.hm-scan-prompt-card {
+	background: linear-gradient(135deg, #ffffff, #f8fafc);
+	border: 1px solid rgba(226, 232, 240, 0.9);
+	border-radius: 18px;
+	padding: 32px 28px;
+	text-align: center;
+	box-shadow: 0 20px 50px rgba(15, 23, 42, 0.07);
+	margin-bottom: 24px;
+}
+
+.hm-scan-prompt-icon {
+	width: 64px;
+	height: 64px;
+	margin: 0 auto 16px;
+	border-radius: 999px;
+	background: linear-gradient(135deg, #eff6ff, #dbeafe);
+	color: #2563eb;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+	box-shadow: 0 12px 30px rgba(37, 99, 235, 0.2);
+}
+
+.hm-scan-prompt-title {
+	font-size: 20px;
+	font-weight: 700;
+	color: #0f172a;
+	margin-bottom: 8px;
+}
+
+.hm-scan-prompt-desc {
+	font-size: 14px;
+	color: #64748b;
+	max-width: 540px;
+	margin: 0 auto 20px;
+	line-height: 1.5;
+}
+
+.hm-scan-prompt-features {
+	display: flex;
+	justify-content: center;
+	gap: 20px;
+	margin-bottom: 24px;
+	flex-wrap: wrap;
+}
+
+.hm-scan-prompt-feature {
+	font-size: 12px;
+	font-weight: 600;
+	color: #334155;
+	background: #f1f5f9;
+	padding: 6px 14px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+/* --- Progress Bar with Percentage & Count --- */
+.hm-scan-progress-box {
+	background: #ffffff;
+	border: 1px solid rgba(226, 232, 240, 0.9);
+	border-radius: 16px;
+	padding: 20px;
+	box-shadow: 0 12px 36px rgba(15, 23, 42, 0.06);
+	margin-bottom: 20px;
+}
+
+.hm-progress-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.hm-progress-title-wrap {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.hm-progress-percentage-badge {
+	font-size: 18px;
+	font-weight: 800;
+	color: #2563eb;
+	background: #eff6ff;
+	padding: 4px 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.hm-progress-count-text {
+	font-size: 13px;
+	font-weight: 600;
+	color: #475569;
+}
+
+.hm-progress-track-enhanced {
+	position: relative;
+	height: 14px;
+	background: #e2e8f0;
+	border-radius: 999px;
+	overflow: hidden;
+	margin-bottom: 12px;
+	box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.hm-progress-fill-animated {
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, #2563eb, #38bdf8);
+	transition: width 300ms ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.hm-progress-fill-animated::after {
+	content: '';
+	position: absolute;
+	top: 0; left: 0; right: 0; bottom: 0;
+	background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 100%);
+	animation: hm-shimmer 1.8s infinite;
+}
+
+@keyframes hm-shimmer {
+	0% { transform: translateX(-100%); }
+	100% { transform: translateX(100%); }
+}
+
+/* --- Live Scan Console Terminal --- */
+.hm-scan-console {
+	background: #0f172a;
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow: 0 16px 40px rgba(15, 23, 42, 0.3);
+	margin-top: 16px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.hm-console-header {
+	background: #1e293b;
+	padding: 8px 14px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid #334155;
+}
+
+.hm-console-title {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	color: #94a3b8;
+	text-transform: uppercase;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.hm-console-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: #22c55e;
+	box-shadow: 0 0 8px #22c55e;
+	animation: hm-pulse 1.5s infinite;
+}
+
+@keyframes hm-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.4; }
+}
+
+.hm-console-controls {
+	display: flex;
+	gap: 8px;
+}
+
+.hm-console-btn {
+	background: #334155;
+	color: #cbd5e1;
+	border: none;
+	border-radius: 4px;
+	padding: 3px 8px;
+	font-size: 11px;
+	cursor: pointer;
+	transition: background 120ms ease;
+}
+
+.hm-console-btn:hover {
+	background: #475569;
+	color: #ffffff;
+}
+
+.hm-console-body {
+	padding: 12px 14px;
+	max-height: 180px;
+	overflow-y: auto;
+	font-size: 12px;
+	line-height: 1.6;
+	color: #e2e8f0;
+}
+
+.hm-console-line {
+	margin-bottom: 2px;
+	word-break: break-all;
+}
+
+.hm-console-line-found {
+	color: #38bdf8;
+	font-weight: 600;
+}
+
+.hm-console-line-batch {
+	color: #94a3b8;
+}
+
+.hm-console-line-done {
+	color: #4ade80;
+	font-weight: 700;
+}
+
+/* --- Fast Cached Load Badge --- */
+.hm-cache-banner {
+	background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+	border: 1px solid #bbf7d0;
+	border-radius: 12px;
+	padding: 10px 16px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+	font-size: 13px;
+	color: #166534;
+}
+
+.hm-cache-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: 600;
 }

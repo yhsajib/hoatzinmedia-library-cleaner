@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from '@wordpress/element'
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element'
 import { Button, Text, Notice, Spinner } from '@wordpress/components'
 import apiFetch from '@wordpress/api-fetch'
 
@@ -16,14 +16,23 @@ export default function SmartScanModule() {
 	const [deleteError, setDeleteError] = useState(null)
 	const [isDeleting, setIsDeleting] = useState(false)
 
-	const progress = scanState && typeof scanState.progress === 'number' ? scanState.progress : 0
-	const spaceSavedReadable =
-		(scanState && scanState.estimated_space_saved_readable) ||
-		(scanState && scanState.estimatedSpaceSavedReadable) ||
-		''
+	const [isScanned, setIsScanned] = useState(false)
+	const [lastScannedTime, setLastScannedTime] = useState('')
+	const [logs, setLogs] = useState([])
+	const [showConsole, setShowConsole] = useState(true)
+
+	const consoleEndRef = useRef(null)
+
 	const total = scanState && typeof scanState.total === 'number' ? scanState.total : 0
 	const processed = scanState && typeof scanState.processed === 'number' ? scanState.processed : 0
 	const finished = !!(scanState && scanState.finished)
+	const calculatedProgress = total > 0 ? Math.min(100, Math.round((processed / total) * 100)) : (finished ? 100 : 0)
+
+	useEffect(() => {
+		if (showConsole && consoleEndRef.current) {
+			consoleEndRef.current.scrollIntoView({ behavior: 'smooth' })
+		}
+	}, [logs, showConsole])
 
 	const loadResults = useCallback(
 		(page = 1) => {
@@ -45,6 +54,20 @@ export default function SmartScanModule() {
 					setResultsPage(response.page || page)
 					setResultsTotalPages(response.total_pages || 0)
 					setResultsTotal(response.total || items.length)
+					setIsScanned(!!response.scanned)
+
+					if (response.scan_meta && response.scan_meta.finished_at) {
+						try {
+							const date = new Date(response.scan_meta.finished_at)
+							setLastScannedTime(date.toLocaleString())
+						} catch (_e) {
+							setLastScannedTime(response.scan_meta.finished_at)
+						}
+					}
+					if (response.scan_meta && Array.isArray(response.scan_meta.logs) && response.scan_meta.logs.length > 0) {
+						setLogs(response.scan_meta.logs)
+					}
+
 					setSelected({})
 				})
 				.catch((error) => {
@@ -57,9 +80,76 @@ export default function SmartScanModule() {
 		[]
 	)
 
+	const runScanStep = useCallback(
+		(scanId = '') => {
+			setScanError(null)
+
+			return apiFetch({
+				path: '/hoatzinmedia/v1/scan',
+				method: 'POST',
+				data: {
+					scan_id: scanId,
+				},
+			})
+				.then((response) => {
+					if (!response) {
+						return null
+					}
+
+					setScanState(response)
+					if (Array.isArray(response.logs) && response.logs.length > 0) {
+						setLogs(response.logs)
+					}
+
+					if (!response.finished && response.scan_id) {
+						return new Promise((resolve) => {
+							setTimeout(() => {
+								resolve(runScanStep(response.scan_id))
+							}, 350)
+						})
+					}
+
+					return response
+				})
+				.catch((error) => {
+					setScanError(error)
+					return null
+				})
+		},
+		[]
+	)
+
+	const checkActiveScan = useCallback(() => {
+		apiFetch({
+			path: '/hoatzinmedia/v1/scan',
+			method: 'GET',
+		})
+			.then((response) => {
+				if (response && response.active && response.scan_id) {
+					setScanState(response)
+					setIsScanning(true)
+					setIsScanned(true)
+					if (Array.isArray(response.logs) && response.logs.length > 0) {
+						setLogs(response.logs)
+					}
+					runScanStep(response.scan_id)
+						.then((res) => {
+							if (res && res.finished) {
+								loadResults(1)
+							}
+						})
+						.finally(() => {
+							setIsScanning(false)
+						})
+				}
+			})
+			.catch(() => {})
+	}, [runScanStep, loadResults])
+
 	useEffect(() => {
 		loadResults(1)
-	}, [loadResults])
+		checkActiveScan()
+	}, [loadResults, checkActiveScan])
 
 	const toggleSelect = useCallback((id) => {
 		setSelected((prev) => {
@@ -112,48 +202,13 @@ export default function SmartScanModule() {
 		[handleDeleteIds]
 	)
 
-	const runScanStep = useCallback(
-		(scanId = '') => {
-			setScanError(null)
-
-			return apiFetch({
-				path: '/hoatzinmedia/v1/scan',
-				method: 'POST',
-				data: {
-					scan_id: scanId,
-				},
-			})
-				.then((response) => {
-					if (!response) {
-						return null
-					}
-
-					setScanState(response)
-
-					if (!response.finished && response.scan_id) {
-						return new Promise((resolve) => {
-							setTimeout(() => {
-								resolve(runScanStep(response.scan_id))
-							}, 500)
-						})
-					}
-
-					return response
-				})
-				.catch((error) => {
-					setScanError(error)
-					return null
-				})
-		},
-		[]
-	)
-
 	const handleRunScan = useCallback(() => {
 		if (isScanning) {
 			return
 		}
 
 		setIsScanning(true)
+		setIsScanned(true)
 
 		runScanStep()
 			.then((response) => {
@@ -170,74 +225,161 @@ export default function SmartScanModule() {
 
 	return (
 		<div className="hm-scanner-layout">
+			{!isScanned && !isScanning && (
+				<div className="hm-scan-prompt-card">
+					<div className="hm-scan-prompt-icon">🔍</div>
+					<div className="hm-scan-prompt-title">Scan Media Library for Unused Files</div>
+					<div className="hm-scan-prompt-desc">
+						Analyze your WordPress database to safely detect unattached and orphaned media files taking up precious disk space.
+					</div>
+					<div className="hm-scan-prompt-features">
+						<span className="hm-scan-prompt-feature">✓ Deep Database Verification</span>
+						<span className="hm-scan-prompt-feature">✓ Real-time Progress Tracking</span>
+						<span className="hm-scan-prompt-feature">✓ Instant Transient Caching</span>
+					</div>
+					<Button
+						variant="primary"
+						className="hm-button hm-button-primary"
+						onClick={handleRunScan}
+						disabled={!canRunScan}
+						style={{ padding: '10px 24px', fontSize: 14 }}
+					>
+						Start Unused Media Scan
+					</Button>
+				</div>
+			)}
+
+			{(isScanning || isScanned) && (
+				<div className="hm-scan-progress-box">
+					<div className="hm-panel-header">
+						<div>
+							<div className="hm-panel-title">
+								Smart Scan & Unused Media Scanner
+							</div>
+							<div className="hm-panel-subtitle">
+								Live scanning with percentage tracking, activity logging, and fast transient caching.
+							</div>
+						</div>
+						<div className="hm-panel-actions">
+							<Button
+								variant="primary"
+								className="hm-button hm-button-primary"
+								onClick={handleRunScan}
+								disabled={!canRunScan}
+							>
+								{isScanning ? 'Scanning…' : 'Run Smart Scan'}
+							</Button>
+						</div>
+					</div>
+
+					{isScanned && !isScanning && lastScannedTime && (
+						<div className="hm-cache-banner">
+							<div className="hm-cache-badge">
+								⚡ Loaded from transient cache (Last scanned: {lastScannedTime})
+							</div>
+							<Button
+								variant="secondary"
+								className="hm-button hm-button-outline"
+								onClick={handleRunScan}
+							>
+								Re-Scan
+							</Button>
+						</div>
+					)}
+
+					{scanError && (
+						<Notice status="error" isDismissible={false} style={{ marginBottom: 12 }}>
+							<Text>
+								Failed to run scan. Please try again in a moment.
+							</Text>
+						</Notice>
+					)}
+
+					{(isScanning || scanState) && (
+						<div>
+							<div className="hm-progress-header">
+								<div className="hm-progress-title-wrap">
+									<span className="hm-progress-percentage-badge">
+										{calculatedProgress}%
+									</span>
+									<span className="hm-progress-count-text">
+										{processed.toLocaleString()} of {total.toLocaleString()} files scanned
+									</span>
+								</div>
+								<div className="hm-progress-count-text">
+									{scanState && scanState.found ? `${scanState.found} unused found` : ''}
+								</div>
+							</div>
+
+							<div className="hm-progress-track-enhanced">
+								<div
+									className="hm-progress-fill-animated"
+									style={{ width: `${calculatedProgress}%` }}
+								/>
+							</div>
+
+							{/* Live Console Logger */}
+							<div className="hm-scan-console">
+								<div className="hm-console-header">
+									<div className="hm-console-title">
+										{isScanning && <span className="hm-console-dot" />}
+										Live Scan Console Output
+									</div>
+									<div className="hm-console-controls">
+										<button
+											type="button"
+											className="hm-console-btn"
+											onClick={() => setLogs([])}
+										>
+											Clear
+										</button>
+										<button
+											type="button"
+											className="hm-console-btn"
+											onClick={() => setShowConsole(!showConsole)}
+										>
+											{showConsole ? 'Hide' : 'Show'} Console
+										</button>
+									</div>
+								</div>
+
+								{showConsole && (
+									<div className="hm-console-body">
+										{logs.length === 0 ? (
+											<div className="hm-console-line" style={{ color: '#64748b' }}>
+												Ready to scan. Click "Run Smart Scan" to start logging activity.
+											</div>
+										) : (
+											logs.map((log, idx) => {
+												let lineClass = 'hm-console-line'
+												if (log.includes('[FOUND]')) lineClass += ' hm-console-line-found'
+												else if (log.includes('[BATCH]')) lineClass += ' hm-console-line-batch'
+												else if (log.includes('[DONE]')) lineClass += ' hm-console-line-done'
+
+												return (
+													<div key={idx} className={lineClass}>
+														{log}
+													</div>
+												)
+											})
+										)}
+										<div ref={consoleEndRef} />
+									</div>
+								)}
+							</div>
+						</div>
+					)}
+				</div>
+			)}
+
 			<div>
 				<div className="hm-panel-header">
 					<div>
 						<div className="hm-panel-title">
-							Smart scan and unused media results
+							Unused Media Files
 						</div>
 						<div className="hm-panel-subtitle">
-							Scan your media library for unused files and review them in one place.
-						</div>
-					</div>
-					<div className="hm-panel-actions">
-						<Button
-							variant="primary"
-							className="hm-button hm-button-primary"
-							onClick={handleRunScan}
-							disabled={!canRunScan}
-						>
-							{isScanning ? 'Scanning…' : 'Run smart scan'}
-						</Button>
-					</div>
-				</div>
-
-				{scanError && (
-					<Notice status="error" isDismissible={false}>
-						<Text>
-							Failed to run scan. Please try again in a moment.
-						</Text>
-					</Notice>
-				)}
-
-				<div className="hm-progress-track">
-					<div
-						className={
-							'hm-progress-fill' +
-							(isScanning ? ' hm-progress-fill-running' : '')
-						}
-						style={{
-							transform: `scaleX(${Math.max(
-								0,
-								Math.min(1, progress / 100)
-							)})`,
-						}}
-					/>
-				</div>
-				<div className="hm-progress-labels">
-					<span>
-						Progress: {progress}% ({processed} of {total} files)
-					</span>
-					<span>
-						Estimated reclaimable space{' '}
-						{spaceSavedReadable || 'Not available yet'}
-					</span>
-				</div>
-				{finished && (
-					<Text size="12">
-						Scan finished. Review unused files below.
-					</Text>
-				)}
-			</div>
-
-			<div>
-				<div className="hm-panel-header">
-					<div>
-						<div className="hm-panel-title">
-							Unused media files
-						</div>
-						<div className="hm-panel-subtitle">
-							These files are not referenced in your content and can likely be removed.
+							These files are not referenced in your content and can likely be safely removed.
 						</div>
 					</div>
 					<div className="hm-panel-actions">
@@ -256,7 +398,7 @@ export default function SmartScanModule() {
 							}
 							style={{ marginLeft: 8 }}
 						>
-							{isDeleting ? 'Deleting…' : 'Delete selected'}
+							{isDeleting ? 'Deleting…' : 'Delete Selected'}
 						</Button>
 					</div>
 				</div>
@@ -282,7 +424,7 @@ export default function SmartScanModule() {
 				)}
 
 				{!isLoadingResults && results.length === 0 && !resultsError && (
-					<Text>
+					<Text style={{ marginTop: 12, color: '#64748b' }}>
 						No unused media found yet. Run a smart scan to populate results.
 					</Text>
 				)}
@@ -369,7 +511,7 @@ export default function SmartScanModule() {
 							</tbody>
 						</table>
 						{resultsTotalPages > 1 && (
-							<div className="hm-footer-row">
+							<div className="hm-footer-row" style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 								<div>
 									Page {resultsPage} of {resultsTotalPages}
 								</div>

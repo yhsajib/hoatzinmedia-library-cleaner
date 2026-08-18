@@ -142,6 +142,27 @@ class Admin {
 			18
 		);
 
+		// 1. Dashboard
+		add_submenu_page(
+			'hoatzinmedia',
+			__( 'Dashboard', 'hoatzinmedia-library-cleaner' ),
+			__( 'Dashboard', 'hoatzinmedia-library-cleaner' ),
+			'manage_options',
+			'hoatzinmedia',
+			array( $this, 'render_app' )
+		);
+
+		// 2. Virtual Media Folders
+		add_submenu_page(
+			'hoatzinmedia',
+			__( 'Virtual Media Folders', 'hoatzinmedia-library-cleaner' ),
+			__( 'Virtual Media Folders', 'hoatzinmedia-library-cleaner' ),
+			'manage_options',
+			'hoatzinmedia-folders',
+			array( $this, 'render_app' )
+		);
+
+		// 3. Smart Scan & Unused Media
 		if ( $smart_scan_enabled ) {
 			add_submenu_page(
 				'hoatzinmedia',
@@ -153,39 +174,31 @@ class Admin {
 			);
 		}
 
-		if ( $large_files_enabled ) {
-			add_submenu_page(
-				'hoatzinmedia',
-				__( 'Large Files', 'hoatzinmedia-library-cleaner' ),
-				__( 'Large Files', 'hoatzinmedia-library-cleaner' ),
-				'manage_options',
-				'hoatzinmedia-large-files',
-				array( $this, 'render_app' )
-			);
-		}
-
+		// 4. Duplicate Finder
 		if ( $duplicates_enabled ) {
 			add_submenu_page(
 				'hoatzinmedia',
-				__( 'Duplicate Checker', 'hoatzinmedia-library-cleaner' ),
-				__( 'Duplicate Checker', 'hoatzinmedia-library-cleaner' ),
+				__( 'Duplicate Finder', 'hoatzinmedia-library-cleaner' ),
+				__( 'Duplicate Finder', 'hoatzinmedia-library-cleaner' ),
 				'manage_options',
 				'hoatzinmedia-duplicates',
 				array( $this, 'render_app' )
 			);
 		}
 
-		if ( $image_formats_enabled ) {
+		// 5. Storage Optimizer
+		if ( $large_files_enabled ) {
 			add_submenu_page(
 				'hoatzinmedia',
-				__( 'Convert (WebP / AVIF)', 'hoatzinmedia-library-cleaner' ),
-				__( 'Convert (WebP / AVIF)', 'hoatzinmedia-library-cleaner' ),
+				__( 'Storage Optimizer', 'hoatzinmedia-library-cleaner' ),
+				__( 'Storage Optimizer', 'hoatzinmedia-library-cleaner' ),
 				'manage_options',
-				'hoatzinmedia-image-formats',
+				'hoatzinmedia-large-files',
 				array( $this, 'render_app' )
 			);
 		}
 
+		// 6. Regenerate Thumbnails
 		if ( $regenerate_enabled ) {
 			add_submenu_page(
 				'hoatzinmedia',
@@ -197,17 +210,19 @@ class Admin {
 			);
 		}
 
-		
+		// 7. Convert to WebP / AVIF
+		if ( $image_formats_enabled ) {
+			add_submenu_page(
+				'hoatzinmedia',
+				__( 'Convert to WebP / AVIF', 'hoatzinmedia-library-cleaner' ),
+				__( 'Convert to WebP / AVIF', 'hoatzinmedia-library-cleaner' ),
+				'manage_options',
+				'hoatzinmedia-image-formats',
+				array( $this, 'render_app' )
+			);
+		}
 
-		add_submenu_page(
-			'hoatzinmedia',
-			__( 'Settings', 'hoatzinmedia-library-cleaner' ),
-			__( 'Settings', 'hoatzinmedia-library-cleaner' ),
-			'manage_options',
-			'hoatzinmedia-general-settings',
-			array( $this, 'render_app' )
-		);
-
+		// 8. Modules
 		add_submenu_page(
 			'hoatzinmedia',
 			__( 'Modules', 'hoatzinmedia-library-cleaner' ),

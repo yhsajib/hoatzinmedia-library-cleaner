@@ -5,6 +5,7 @@ import StorageOptimizerModule from './modules/StorageOptimizerModule'
 import SettingsModule from './modules/SettingsModule'
 import RegenerateThumbnailsModule from './modules/RegenerateThumbnailsModule'
 import ImageFormatConverterModule from './modules/ImageFormatConverterModule'
+import MediaFoldersModule from './modules/MediaFoldersModule'
 
 const modulesConfig = [
 	{
@@ -14,6 +15,14 @@ const modulesConfig = [
 		enabled: true,
 		icon: 'dashboard',
 		Component: DashboardModule,
+	},
+	{
+		id: 'mediaFolders',
+		title: 'Virtual Media Folders',
+		isPro: false,
+		enabled: true,
+		icon: 'category',
+		Component: MediaFoldersModule,
 	},
 	{
 		id: 'smartScan',

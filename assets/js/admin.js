@@ -1944,6 +1944,24 @@
 				})
 		}
 
+		useEffect(function () {
+			apiFetch({
+				path: 'hoatzinmedia/v1/scan',
+				method: 'GET',
+				headers: {
+					'X-WP-Nonce': HoatzinMediaSettings.nonce,
+				},
+			})
+				.then(function (res) {
+					if (res && res.active && res.scan_id) {
+						setScanState(res)
+						setScanId(res.scan_id)
+						runScan(res.scan_id)
+					}
+				})
+				.catch(function () {})
+		}, [])
+
 		function startScan() {
 			if (scanRunning) {
 				return
@@ -1973,23 +1991,53 @@
 
 		var lastScan = props && props.lastScan ? props.lastScan : ''
 
+		var logs = (scanState && Array.isArray(scanState.logs)) ? scanState.logs : []
+
 		return element.createElement(
 			'div',
-			{ className: 'hm-scanner-layout' },
+			{ className: 'hm-scan-progress-box' },
 			element.createElement(
 				'div',
-				null,
+				{ className: 'hm-panel-header' },
+				element.createElement(
+					'div',
+					null,
+					element.createElement('div', { className: 'hm-panel-title' }, i18n.__('Smart Scan & Unused Media Scanner', HM_TEXT_DOMAIN)),
+					element.createElement('div', { className: 'hm-panel-subtitle' }, i18n.__('Scan media library for unused files with percentage tracking and live logging.', HM_TEXT_DOMAIN))
+				),
+				element.createElement(
+					'div',
+					{ className: 'hm-panel-actions' },
+					element.createElement(
+						'button',
+						{
+							type: 'button',
+							className: 'hm-button hm-button-primary',
+							onClick: startScan,
+							disabled: scanRunning,
+						},
+						scanRunning
+							? i18n.__('Scanning unused media…', 'hoatzinmedia')
+							: i18n.__('Run unused media scan', 'hoatzinmedia')
+					)
+				)
+			),
+			lastScan && !scanRunning && element.createElement(
+				'div',
+				{ className: 'hm-cache-banner' },
+				element.createElement(
+					'div',
+					{ className: 'hm-cache-badge' },
+					'⚡ ' + i18n.__('Loaded from transient cache. Last scan:', HM_TEXT_DOMAIN) + ' ' + lastScan
+				),
 				element.createElement(
 					'button',
 					{
 						type: 'button',
-						className: 'hm-button hm-button-primary',
+						className: 'hm-button hm-button-outline',
 						onClick: startScan,
-						disabled: scanRunning,
 					},
-					scanRunning
-						? i18n.__('Scanning unused media…', 'hoatzinmedia')
-						: i18n.__('Run unused media scan', 'hoatzinmedia')
+					i18n.__('Re-Scan', HM_TEXT_DOMAIN)
 				)
 			),
 			scanError &&
@@ -2008,57 +2056,61 @@
 					},
 					scanError
 				),
-			(scanRunning || (scanState && progress > 0 && progress < 100)) &&
-				element.createElement(
-					'div',
-					{ className: 'hm-progress-track' },
-					element.createElement('div', {
-						className:
-							'hm-progress-fill' +
-							(scanRunning ? ' hm-progress-fill-running' : ''),
-						style: { transform: 'scaleX(' + animatedProgress / 100 + ')' },
-					})
-				),
 			(scanRunning || scanState) &&
 				element.createElement(
 					'div',
-					{ className: 'hm-progress-labels' },
+					null,
 					element.createElement(
-						'span',
-						null,
-						i18n.__('Progress', 'hoatzinmedia'),
-						': ',
-						progress,
-						'%'
-					),
-					scanState &&
+						'div',
+						{ className: 'hm-progress-header' },
 						element.createElement(
-							'span',
-							null,
-							i18n.__('Unused files', 'hoatzinmedia'),
-							': ',
-							(scanState.found || 0).toLocaleString()
+							'div',
+							{ className: 'hm-progress-title-wrap' },
+							element.createElement('span', { className: 'hm-progress-percentage-badge' }, progress + '%'),
+							element.createElement('span', { className: 'hm-progress-count-text' }, (scanState ? (scanState.processed || 0).toLocaleString() : '0') + ' of ' + (scanState ? (scanState.total || 0).toLocaleString() : '0') + ' files scanned')
+						),
+						element.createElement(
+							'div',
+							{ className: 'hm-progress-count-text' },
+							scanState && scanState.found ? (scanState.found + ' unused found (' + bytesToReadable(scanState.found_bytes || 0) + ')') : ''
 						)
-				),
-			scanState &&
-				element.createElement(
-					'div',
-					{ className: 'hm-badges-row' },
+					),
 					element.createElement(
-						'span',
-						null,
-						i18n.__('Estimated space saved if removed:', 'hoatzinmedia'),
-						' ',
-						bytesToReadable(scanState.found_bytes || 0)
+						'div',
+						{ className: 'hm-progress-track-enhanced' },
+						element.createElement('div', {
+							className: 'hm-progress-fill-animated',
+							style: { width: progress + '%' },
+						})
+					),
+					element.createElement(
+						'div',
+						{ className: 'hm-scan-console' },
+						element.createElement(
+							'div',
+							{ className: 'hm-console-header' },
+							element.createElement(
+								'div',
+								{ className: 'hm-console-title' },
+								scanRunning && element.createElement('span', { className: 'hm-console-dot' }),
+								i18n.__('Live Scan Console Output', HM_TEXT_DOMAIN)
+							)
+						),
+						element.createElement(
+							'div',
+							{ className: 'hm-console-body' },
+							logs.length === 0
+								? element.createElement('div', { className: 'hm-console-line', style: { color: '#64748b' } }, i18n.__('Ready to scan. Click "Run unused media scan" to begin.', HM_TEXT_DOMAIN))
+								: logs.map(function (logLine, lIdx) {
+										var lineClass = 'hm-console-line'
+										if (logLine.indexOf('[FOUND]') !== -1) lineClass += ' hm-console-line-found'
+										else if (logLine.indexOf('[BATCH]') !== -1) lineClass += ' hm-console-line-batch'
+										else if (logLine.indexOf('[DONE]') !== -1) lineClass += ' hm-console-line-done'
+										return element.createElement('div', { key: lIdx, className: lineClass }, logLine)
+								  })
+						)
 					)
-				),
-			element.createElement(
-				'div',
-				{ className: 'hm-smartscan-last-scan' },
-				i18n.__('Last scan:', 'hoatzinmedia'),
-				' ',
-				lastScan ? lastScan : '—'
-			)
+				)
 		)
 	}
 
@@ -3252,12 +3304,84 @@
 		var _useStateConvertConfirmOpen = useState(false)
 		var convertConfirmOpen = _useStateConvertConfirmOpen[0]
 		var setConvertConfirmOpen = _useStateConvertConfirmOpen[1]
-		var _useStateMessage = useState('')
-		var message = _useStateMessage[0]
-		var setMessage = _useStateMessage[1]
-		var _useStateConvertConfirmOpen = useState(false)
-		var convertConfirmOpen = _useStateConvertConfirmOpen[0]
-		var setConvertConfirmOpen = _useStateConvertConfirmOpen[1]
+		var _useStateIsScanned = useState(false)
+		var isScanned = _useStateIsScanned[0]
+		var setIsScanned = _useStateIsScanned[1]
+
+		var _useStateLastScanned = useState('')
+		var lastScanned = _useStateLastScanned[0]
+		var setLastScanned = _useStateLastScanned[1]
+
+		var _useStateLogs = useState([])
+		var logs = _useStateLogs[0]
+		var setLogs = _useStateLogs[1]
+
+		var _useStateIsScanning = useState(false)
+		var isScanning = _useStateIsScanning[0]
+		var setIsScanning = _useStateIsScanning[1]
+
+		var _useStateScanState = useState(null)
+		var scanState = _useStateScanState[0]
+		var setScanState = _useStateScanState[1]
+
+		function runDupScanStep(scanId) {
+			var reqData = scanId ? { scan_id: scanId } : {}
+			apiFetch({
+				path: 'hoatzinmedia/v1/duplicates/scan',
+				method: 'POST',
+				data: reqData,
+				headers: {
+					'X-WP-Nonce': HoatzinMediaSettings.nonce,
+				},
+			})
+				.then(function (res) {
+					if (!res) return
+					setScanState(res)
+					if (res.logs && Array.isArray(res.logs)) {
+						setLogs(res.logs)
+					}
+					if (!res.finished && res.scan_id) {
+						window.setTimeout(function () {
+							runDupScanStep(res.scan_id)
+						}, 350)
+					} else {
+						setIsScanning(false)
+						reloadGroups()
+					}
+				})
+				.catch(function () {
+					setIsScanning(false)
+				})
+		}
+
+		useEffect(function () {
+			apiFetch({
+				path: 'hoatzinmedia/v1/duplicates/scan',
+				method: 'GET',
+				headers: {
+					'X-WP-Nonce': HoatzinMediaSettings.nonce,
+				},
+			})
+				.then(function (res) {
+					if (res && res.active && res.scan_id) {
+						setScanState(res)
+						setIsScanning(true)
+						setIsScanned(true)
+						if (res.logs && Array.isArray(res.logs)) {
+							setLogs(res.logs)
+						}
+						runDupScanStep(res.scan_id)
+					}
+				})
+				.catch(function () {})
+		}, [])
+
+		function startDuplicateScan() {
+			if (isScanning) return
+			setIsScanning(true)
+			setIsScanned(true)
+			runDupScanStep(null)
+		}
 
 		function reloadGroups() {
 			setLoading(true)
@@ -3284,6 +3408,17 @@
 						totalPages:
 							response && response.total_pages ? response.total_pages : 0,
 					})
+					if (response) {
+						if (typeof response.scanned !== 'undefined') {
+							setIsScanned(!!response.scanned)
+						}
+						if (response.last_scanned) {
+							setLastScanned(response.last_scanned)
+						}
+						if (response.logs && Array.isArray(response.logs) && response.logs.length > 0) {
+							setLogs(response.logs)
+						}
+					}
 					setSelected([])
 					setOpenGroupKey(null)
 					setLoading(false)
@@ -3583,15 +3718,151 @@
 			return acc
 		}, 0)
 
+		var dupTotal = (scanState && typeof scanState.total === 'number') ? scanState.total : 0
+		var dupProcessed = (scanState && typeof scanState.processed === 'number') ? scanState.processed : 0
+		var dupFinished = !!(scanState && scanState.finished)
+		var dupProgress = dupTotal > 0 ? Math.min(100, Math.round((dupProcessed / dupTotal) * 100)) : (dupFinished ? 100 : 0)
+
 		return element.createElement(
 			'div',
 			{ className: 'hm-duplicates', ref: wrapperRef },
-			element.createElement(
+
+			!isScanned && !isScanning && element.createElement(
 				'div',
-				{ className: 'hm-dup-toolbar' },
+				{ className: 'hm-scan-prompt-card' },
+				element.createElement('div', { className: 'hm-scan-prompt-icon' }, '📋'),
+				element.createElement('div', { className: 'hm-scan-prompt-title' }, i18n.__('Scan Media Library for Duplicates', HM_TEXT_DOMAIN)),
+				element.createElement('div', { className: 'hm-scan-prompt-desc' }, i18n.__('Detect duplicate images and media files uploaded multiple times across your WordPress media library to reclaim disk space.', HM_TEXT_DOMAIN)),
 				element.createElement(
 					'div',
-					{ className: 'hm-dup-savings' },
+					{ className: 'hm-scan-prompt-features' },
+					element.createElement('span', { className: 'hm-scan-prompt-feature' }, '✓ Content MD5 Hash Comparison'),
+					element.createElement('span', { className: 'hm-scan-prompt-feature' }, '✓ Real-time Progress & Logging'),
+					element.createElement('span', { className: 'hm-scan-prompt-feature' }, '✓ Fast Transient Caching')
+				),
+				element.createElement(
+					'button',
+					{
+						type: 'button',
+						className: 'hm-button hm-button-primary',
+						onClick: startDuplicateScan,
+						disabled: isScanning,
+						style: { padding: '10px 24px', fontSize: '14px' }
+					},
+					i18n.__('Start Duplicate Scan', HM_TEXT_DOMAIN)
+				)
+			),
+
+			(isScanning || isScanned) && element.createElement(
+				'div',
+				{ className: 'hm-scan-progress-box' },
+				element.createElement(
+					'div',
+					{ className: 'hm-panel-header' },
+					element.createElement(
+						'div',
+						null,
+						element.createElement('div', { className: 'hm-panel-title' }, i18n.__('Duplicate Checker & Scanner', HM_TEXT_DOMAIN)),
+						element.createElement('div', { className: 'hm-panel-subtitle' }, i18n.__('Live duplicate scanning with real-time percentage progress, activity logging, and cached results.', HM_TEXT_DOMAIN))
+					),
+					element.createElement(
+						'div',
+						{ className: 'hm-panel-actions' },
+						element.createElement(
+							'button',
+							{
+								type: 'button',
+								className: 'hm-button hm-button-primary',
+								onClick: startDuplicateScan,
+								disabled: isScanning,
+							},
+							isScanning ? i18n.__('Scanning…', HM_TEXT_DOMAIN) : i18n.__('Run Duplicate Scan', HM_TEXT_DOMAIN)
+						)
+					)
+				),
+				isScanned && !isScanning && lastScanned && element.createElement(
+					'div',
+					{ className: 'hm-cache-banner' },
+					element.createElement(
+						'div',
+						{ className: 'hm-cache-badge' },
+						'⚡ ' + i18n.__('Loaded from transient cache. Last scan:', HM_TEXT_DOMAIN) + ' ' + lastScanned
+					),
+					element.createElement(
+						'button',
+						{
+							type: 'button',
+							className: 'hm-button hm-button-outline',
+							onClick: startDuplicateScan,
+						},
+						i18n.__('Re-Scan', HM_TEXT_DOMAIN)
+					)
+				),
+				(isScanning || scanState) && element.createElement(
+					'div',
+					null,
+					element.createElement(
+						'div',
+						{ className: 'hm-progress-header' },
+						element.createElement(
+							'div',
+							{ className: 'hm-progress-title-wrap' },
+							element.createElement('span', { className: 'hm-progress-percentage-badge' }, dupProgress + '%'),
+							element.createElement('span', { className: 'hm-progress-count-text' }, dupProcessed.toLocaleString() + ' of ' + dupTotal.toLocaleString() + ' attachments scanned')
+						),
+						element.createElement(
+							'div',
+							{ className: 'hm-progress-count-text' },
+							scanState && scanState.found_groups ? (scanState.found_groups + ' duplicate groups found') : ''
+						)
+					),
+					element.createElement(
+						'div',
+						{ className: 'hm-progress-track-enhanced' },
+						element.createElement('div', {
+							className: 'hm-progress-fill-animated',
+							style: { width: dupProgress + '%' },
+						})
+					),
+					element.createElement(
+						'div',
+						{ className: 'hm-scan-console' },
+						element.createElement(
+							'div',
+							{ className: 'hm-console-header' },
+							element.createElement(
+								'div',
+								{ className: 'hm-console-title' },
+								isScanning && element.createElement('span', { className: 'hm-console-dot' }),
+								i18n.__('Live Duplicate Scan Log Output', HM_TEXT_DOMAIN)
+							)
+						),
+						element.createElement(
+							'div',
+							{ className: 'hm-console-body' },
+							logs.length === 0
+								? element.createElement('div', { className: 'hm-console-line', style: { color: '#64748b' } }, i18n.__('Ready to scan. Click "Run Duplicate Scan" to begin logging.', HM_TEXT_DOMAIN))
+								: logs.map(function (logLine, lIdx) {
+										var lineClass = 'hm-console-line'
+										if (logLine.indexOf('[FOUND]') !== -1) lineClass += ' hm-console-line-found'
+										else if (logLine.indexOf('[BATCH]') !== -1) lineClass += ' hm-console-line-batch'
+										else if (logLine.indexOf('[DONE]') !== -1) lineClass += ' hm-console-line-done'
+										return element.createElement('div', { key: lIdx, className: lineClass }, logLine)
+								  })
+						)
+					)
+				)
+			),
+
+			(isScanning || isScanned) && element.createElement(
+				'div',
+				null,
+				element.createElement(
+					'div',
+					{ className: 'hm-dup-toolbar' },
+					element.createElement(
+						'div',
+						{ className: 'hm-dup-savings' },
 					element.createElement('span', {
 						className: 'dashicons dashicons-database',
 						'aria-hidden': 'true',
@@ -3614,14 +3885,14 @@
 						{
 							type: 'button',
 							className: 'hm-button hm-button-primary hm-dup-scan-btn',
-							onClick: reloadGroups,
-							disabled: loading,
+							onClick: startDuplicateScan,
+							disabled: isScanning || loading,
 						},
 						element.createElement('span', {
 							className: 'dashicons dashicons-search',
 							'aria-hidden': 'true',
 						}),
-						i18n.__('Scan', 'hoatzinmedia')
+						isScanning ? i18n.__('Scanning…', 'hoatzinmedia') : i18n.__('Scan Duplicates', 'hoatzinmedia')
 					),
 					element.createElement(
 						'div',
@@ -4011,6 +4282,7 @@
 							)
 						)
 				  )
+			)
 		)
 	}
 
